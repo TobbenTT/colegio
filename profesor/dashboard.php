@@ -45,7 +45,6 @@ $clases = $stmt->fetchAll();
         
         <a href="dashboard.php" class="active"><i class="bi bi-speedometer2"></i> <span>Mis Cursos</span></a>
         <a href="perfil.php"><i class="bi bi-person-circle"></i> <span>Mi Perfil</span></a>
-        <a href="#" class="text-muted small text-uppercase px-4 mt-3 mb-2">Herramientas</a>
         <a href="mensajes.php"><i class="bi bi-chat-dots"></i> <span>Mensajería</span></a>
         
         <div style="margin-top: 50px;">

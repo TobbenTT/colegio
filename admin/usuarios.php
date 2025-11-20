@@ -2,39 +2,89 @@
 session_start();
 require '../config/db.php';
 
-// Seguridad: Solo Admin
+// 1. Seguridad
 if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'administrador') { 
     header("Location: ../login.php"); exit; 
 }
 
 $mensaje = "";
 $tipo_msg = "";
+$datos_editar = null;
 
-// LÓGICA CREAR USUARIO
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nombre = $_POST['nombre'];
-    $email = $_POST['email'];
-    $pass_raw = $_POST['password']; 
-    $rol = $_POST['rol'];
+// 2. CAPTURAR FILTRO (GET)
+// Si hay un filtro en la URL (?filtro=alumno), lo guardamos.
+$filtro_rol = isset($_GET['filtro']) ? $_GET['filtro'] : '';
 
-    // Encriptamos
-    $pass_hash = password_hash($pass_raw, PASSWORD_DEFAULT);
+// 3. LÓGICA EDICIÓN
+if (isset($_GET['editar'])) {
+    $id_editar = $_GET['editar'];
+    $stmtEdit = $pdo->prepare("SELECT * FROM usuarios WHERE id = ?");
+    $stmtEdit->execute([$id_editar]);
+    $datos_editar = $stmtEdit->fetch();
+}
 
-    $sql = "INSERT INTO usuarios (nombre, email, password, rol) VALUES (:n, :e, :p, :r)";
-    $stmt = $pdo->prepare($sql);
-    
-    try {
-        $stmt->execute(['n'=>$nombre, 'e'=>$email, 'p'=>$pass_hash, 'r'=>$rol]);
-        $mensaje = "Usuario <strong>$nombre</strong> creado correctamente.";
-        $tipo_msg = "success";
-    } catch (PDOException $e) {
-        $mensaje = "Error: El correo ya está registrado.";
-        $tipo_msg = "danger";
+// 4. LÓGICA BORRAR
+if (isset($_GET['borrar'])) {
+    $id_borrar = $_GET['borrar'];
+    if ($id_borrar != $_SESSION['user_id']) {
+        $stmtDel = $pdo->prepare("DELETE FROM usuarios WHERE id = ?");
+        $stmtDel->execute([$id_borrar]);
+        
+        // Redirigir manteniendo el filtro
+        $redirect = "usuarios.php" . ($filtro_rol ? "?filtro=$filtro_rol" : "");
+        header("Location: $redirect"); exit;
+    } else {
+        $mensaje = "No puedes eliminar tu propia cuenta."; $tipo_msg = "danger";
     }
 }
 
-// LISTA DE ÚLTIMOS USUARIOS (Limitado a 20 para no saturar)
-$usuarios = $pdo->query("SELECT * FROM usuarios ORDER BY id DESC LIMIT 20")->fetchAll();
+// 5. GUARDAR / ACTUALIZAR (POST)
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $nombre = $_POST['nombre'];
+    $email = $_POST['email'];
+    $rol = $_POST['rol'];
+    $id_actualizar = $_POST['id_usuario'] ?? '';
+    $pass_raw = $_POST['password']; 
+
+    try {
+        if (!empty($id_actualizar)) {
+            // UPDATE
+            if (!empty($pass_raw)) {
+                $pass_hash = password_hash($pass_raw, PASSWORD_DEFAULT);
+                $sql = "UPDATE usuarios SET nombre=?, email=?, rol=?, password=? WHERE id=?";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([$nombre, $email, $rol, $pass_hash, $id_actualizar]);
+            } else {
+                $sql = "UPDATE usuarios SET nombre=?, email=?, rol=? WHERE id=?";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([$nombre, $email, $rol, $id_actualizar]);
+            }
+            $mensaje = "Usuario actualizado."; $tipo_msg = "info";
+            $datos_editar = null;
+        } else {
+            // INSERT
+            $pass_final = !empty($pass_raw) ? $pass_raw : '12345';
+            $pass_hash = password_hash($pass_final, PASSWORD_DEFAULT);
+            $sql = "INSERT INTO usuarios (nombre, email, password, rol) VALUES (:n, :e, :p, :r)";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute(['n'=>$nombre, 'e'=>$email, 'p'=>$pass_hash, 'r'=>$rol]);
+            $mensaje = "Usuario creado."; $tipo_msg = "success";
+        }
+    } catch (PDOException $e) {
+        $mensaje = "Error: Correo ya registrado."; $tipo_msg = "danger";
+    }
+}
+
+// 6. LISTAR USUARIOS (CON FILTRO)
+if (!empty($filtro_rol)) {
+    // Si hay filtro, traemos solo ese rol
+    $stmtList = $pdo->prepare("SELECT * FROM usuarios WHERE rol = ? ORDER BY id DESC");
+    $stmtList->execute([$filtro_rol]);
+    $usuarios = $stmtList->fetchAll();
+} else {
+    // Si no, traemos todos (Límite 50 para rapidez)
+    $usuarios = $pdo->query("SELECT * FROM usuarios ORDER BY id DESC LIMIT 50")->fetchAll();
+}
 ?>
 
 <!DOCTYPE html>
@@ -52,6 +102,7 @@ $usuarios = $pdo->query("SELECT * FROM usuarios ORDER BY id DESC LIMIT 20")->fet
         <a href="dashboard.php"><i class="bi bi-speedometer2"></i> <span>Inicio</span></a>
         <hr class="text-secondary mx-3 my-2">
         <a href="usuarios.php" class="active"><i class="bi bi-people-fill"></i> <span>Usuarios</span></a>
+        <a href="matriculas.php"><i class="bi bi-card-checklist"></i> <span>Matrículas</span></a>
         <a href="cursos.php"><i class="bi bi-building"></i> <span>Cursos y Materias</span></a>
         <a href="asignacion.php"><i class="bi bi-diagram-3-fill"></i> <span>Carga Académica</span></a>
         <div class="mt-5"><a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-left"></i> <span>Salir</span></a></div>
@@ -69,36 +120,58 @@ $usuarios = $pdo->query("SELECT * FROM usuarios ORDER BY id DESC LIMIT 20")->fet
             
             <div class="col-lg-4 mb-4">
                 <div class="card shadow border-0 sticky-top" style="top: 20px; z-index: 1;">
-                    <div class="card-header bg-primary text-white py-3">
-                        <h5 class="mb-0 fw-bold"><i class="bi bi-person-plus"></i> Nuevo Usuario</h5>
+                    <div class="card-header <?php echo $datos_editar ? 'bg-warning' : 'bg-primary'; ?> text-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <?php echo $datos_editar ? '✏️ Editar Usuario' : '➕ Nuevo Usuario'; ?>
+                        </h5>
                     </div>
                     <div class="card-body p-4">
-                        <form method="POST">
+                        <form method="POST" action="usuarios.php<?php echo $filtro_rol ? '?filtro='.$filtro_rol : ''; ?>">
+                            <input type="hidden" name="id_usuario" value="<?php echo $datos_editar['id'] ?? ''; ?>">
+
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted">Nombre Completo</label>
-                                <input type="text" name="nombre" class="form-control" placeholder="Ej: Juan Pérez" required>
+                                <label class="form-label small fw-bold text-muted">Nombre</label>
+                                <input type="text" name="nombre" class="form-control" placeholder="Nombre Completo" 
+                                       value="<?php echo $datos_editar['nombre'] ?? ''; ?>" required>
                             </div>
+                            
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted">Correo Electrónico</label>
-                                <input type="email" name="email" class="form-control" placeholder="juan@cole.cl" required>
+                                <label class="form-label small fw-bold text-muted">Correo</label>
+                                <input type="email" name="email" class="form-control" placeholder="correo@cole.cl" 
+                                       value="<?php echo $datos_editar['email'] ?? ''; ?>" required>
                             </div>
+                            
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted">Contraseña Inicial</label>
-                                <input type="text" name="password" class="form-control" value="12345" required>
-                                <div class="form-text text-xs">Se encriptará automáticamente.</div>
+                                <label class="form-label small fw-bold text-muted">
+                                    <?php echo $datos_editar ? 'Nueva Clave (Opcional)' : 'Contraseña Inicial'; ?>
+                                </label>
+                                <input type="text" name="password" class="form-control" 
+                                       placeholder="<?php echo $datos_editar ? 'Dejar vacía para mantener' : '12345'; ?>"
+                                       <?php echo $datos_editar ? '' : 'value="12345"'; ?>>
                             </div>
+                            
                             <div class="mb-4">
-                                <label class="form-label small fw-bold text-muted">Rol del Usuario</label>
+                                <label class="form-label small fw-bold text-muted">Rol</label>
                                 <select name="rol" class="form-select" required>
-                                    <option value="" disabled selected>Seleccionar...</option>
-                                    <option value="alumno">🎓 Alumno</option>
-                                    <option value="profesor">👨‍🏫 Profesor</option>
-                                    <option value="director">👔 Director</option>
-                                    <option value="administrador">⚙️ Administrador</option>
-                                    <option value="apoderado">👪 Apoderado</option>
+                                    <option value="" disabled <?php echo !$datos_editar ? 'selected' : ''; ?>>Seleccionar...</option>
+                                    <?php 
+                                        $roles = ['alumno', 'profesor', 'director', 'administrador', 'apoderado'];
+                                        foreach($roles as $r): 
+                                            $selected = ($datos_editar && $datos_editar['rol'] == $r) ? 'selected' : '';
+                                    ?>
+                                        <option value="<?php echo $r; ?>" <?php echo $selected; ?>><?php echo ucfirst($r); ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
-                            <button class="btn btn-primary w-100 fw-bold py-2">CREAR CUENTA</button>
+                            
+                            <div class="d-grid gap-2">
+                                <button class="btn <?php echo $datos_editar ? 'btn-warning' : 'btn-primary'; ?> fw-bold">
+                                    <?php echo $datos_editar ? 'GUARDAR CAMBIOS' : 'CREAR CUENTA'; ?>
+                                </button>
+                                <?php if($datos_editar): ?>
+                                    <a href="usuarios.php<?php echo $filtro_rol ? '?filtro='.$filtro_rol : ''; ?>" class="btn btn-outline-secondary">Cancelar</a>
+                                <?php endif; ?>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -106,13 +179,26 @@ $usuarios = $pdo->query("SELECT * FROM usuarios ORDER BY id DESC LIMIT 20")->fet
 
             <div class="col-lg-8">
                 <div class="card shadow-sm border-0">
+                    
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 fw-bold text-secondary">Usuarios Recientes</h5>
-                        <span class="badge bg-light text-dark border">Últimos 20</span>
+                        <h5 class="mb-0 fw-bold text-secondary">Lista de Usuarios</h5>
+                        
+                        <form method="GET" class="d-flex align-items-center">
+                            <label class="me-2 small fw-bold text-muted">Filtrar por:</label>
+                            <select name="filtro" class="form-select form-select-sm w-auto border-primary" onchange="this.form.submit()">
+                                <option value="">Todos los roles</option>
+                                <option value="alumno" <?php echo ($filtro_rol=='alumno')?'selected':''; ?>>🎓 Alumnos</option>
+                                <option value="profesor" <?php echo ($filtro_rol=='profesor')?'selected':''; ?>>👨‍🏫 Profesores</option>
+                                <option value="apoderado" <?php echo ($filtro_rol=='apoderado')?'selected':''; ?>>👪 Apoderados</option>
+                                <option value="director" <?php echo ($filtro_rol=='director')?'selected':''; ?>>👔 Directores</option>
+                                <option value="administrador" <?php echo ($filtro_rol=='administrador')?'selected':''; ?>>⚙️ Admins</option>
+                            </select>
+                        </form>
                     </div>
+
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-modern table-hover mb-0">
+                            <table class="table table-modern table-hover mb-0 align-middle">
                                 <thead class="bg-light">
                                     <tr>
                                         <th class="ps-4">Usuario</th>
@@ -122,25 +208,30 @@ $usuarios = $pdo->query("SELECT * FROM usuarios ORDER BY id DESC LIMIT 20")->fet
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <?php if(count($usuarios) == 0): ?>
+                                        <tr><td colspan="4" class="text-center py-4 text-muted">No se encontraron usuarios con ese filtro.</td></tr>
+                                    <?php endif; ?>
+
                                     <?php foreach($usuarios as $u): ?>
-                                        <tr>
+                                        <tr class="<?php echo ($datos_editar && $datos_editar['id'] == $u['id']) ? 'table-warning' : ''; ?>">
                                             <td class="ps-4">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center fw-bold me-3" style="width: 40px; height: 40px; border: 1px solid #eee;">
+                                                    <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center fw-bold me-3" style="width: 35px; height: 35px; border: 1px solid #eee;">
                                                         <?php echo strtoupper(substr($u['nombre'], 0, 1)); ?>
                                                     </div>
-                                                    <div>
-                                                        <span class="d-block fw-bold text-dark"><?php echo $u['nombre']; ?></span>
-                                                        <small class="text-muted text-xs">ID: <?php echo $u['id']; ?></small>
-                                                    </div>
+                                                    <span class="fw-bold text-dark"><?php echo $u['nombre']; ?></span>
                                                 </div>
                                             </td>
                                             <td>
                                                 <?php 
-                                                    $badge = "bg-secondary";
-                                                    if($u['rol']=='alumno') $badge="bg-info text-dark";
-                                                    if($u['rol']=='profesor') $badge="bg-warning text-dark";
-                                                    if($u['rol']=='administrador') $badge="bg-dark";
+                                                    $badge = match($u['rol']) {
+                                                        'alumno' => 'bg-info text-dark',
+                                                        'profesor' => 'bg-warning text-dark',
+                                                        'administrador' => 'bg-dark text-white',
+                                                        'director' => 'bg-danger text-white',
+                                                        'apoderado' => 'bg-success text-white',
+                                                        default => 'bg-secondary text-white'
+                                                    };
                                                 ?>
                                                 <span class="badge <?php echo $badge; ?> rounded-pill px-3 py-2 text-uppercase" style="font-size: 0.7rem;">
                                                     <?php echo $u['rol']; ?>
@@ -148,7 +239,16 @@ $usuarios = $pdo->query("SELECT * FROM usuarios ORDER BY id DESC LIMIT 20")->fet
                                             </td>
                                             <td class="text-muted small"><?php echo $u['email']; ?></td>
                                             <td class="text-end pe-4">
-                                                <button class="btn btn-sm btn-light text-primary"><i class="bi bi-pencil-square"></i></button>
+                                                <a href="usuarios.php?editar=<?php echo $u['id']; ?><?php echo $filtro_rol ? '&filtro='.$filtro_rol : ''; ?>" 
+                                                   class="btn btn-sm btn-light text-primary border me-1">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+
+                                                <a href="usuarios.php?borrar=<?php echo $u['id']; ?><?php echo $filtro_rol ? '&filtro='.$filtro_rol : ''; ?>" 
+                                                   class="btn btn-sm btn-light text-danger border" 
+                                                   onclick="return confirm('¿Eliminar usuario?')">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
