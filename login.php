@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['user_id'] = $usuario['id'];
             $_SESSION['nombre'] = $usuario['nombre'];
             $_SESSION['rol'] = $usuario['rol'];
-
+            $_SESSION['foto'] = $usuario['foto'];
             // Redirección según rol
             switch ($usuario['rol']) {
                 case 'alumno': header("Location: alumno/dashboard.php"); break;

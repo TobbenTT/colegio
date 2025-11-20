@@ -1,0 +1,50 @@
+/* ESTILOS ESPECÍFICOS PARA ANOTACIONES */
+.note-card {
+    border: none;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.note-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+/* Barra lateral de color según tipo */
+.note-positive { border-left: 6px solid #2ecc71; }
+.note-negative { border-left: 6px solid #e74c3c; }
+
+/* Icono de fondo grande y sutil */
+.note-bg-icon {
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    font-size: 6rem;
+    opacity: 0.05;
+    transform: rotate(-15deg);
+}
+
+/* Encabezado de la tarjeta */
+.note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.note-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-pos { background-color: #e8f8f5; color: #27ae60; }
+.badge-neg { background-color: #fdedec; color: #c0392b; }

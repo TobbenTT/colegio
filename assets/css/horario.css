@@ -1,0 +1,56 @@
+.clase-card {
+    cursor: pointer;
+    transition: all 0.3s;
+    border-left: 4px solid var(--accent-color);
+    background: white;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    position: relative;
+}
+.clase-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-left-color: var(--primary-color);
+}
+.day-header {
+    background: var(--primary-color);
+    color: white;
+    padding: 10px;
+    border-radius: 10px 10px 0 0;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Alerta de Prueba */
+.badge-prueba {
+    position: absolute;
+    top: -8px;
+    right: -5px;
+    background-color: #dc3545;
+    color: white;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 10;
+    animation: pulse 2s infinite;
+}
+.badge-tarea {
+    position: absolute;
+    top: -8px;
+    right: -5px;
+    background-color: #ffc107;
+    color: #000;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 10;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}

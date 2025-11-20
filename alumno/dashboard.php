@@ -100,14 +100,35 @@ $avatar = isset($_SESSION['foto']) && !empty($_SESSION['foto']) ? "../assets/upl
 
     <div class="main-content">
         
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="fw-bold">¡Hola, <?php echo isset($_SESSION['nombre']) ? explode(" ", $_SESSION['nombre'])[0] : 'Alumno'; ?>! 🚀</h2>
-                <p class="text-muted">Estudiante del <strong><?php echo $nombre_curso; ?></strong></p>
-            </div>
-            <img src="<?php echo $avatar; ?>" width="50" height="50" class="rounded-circle border" style="object-fit:cover;" alt="Avatar">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">¡Hola, <?php echo explode(" ", $_SESSION['nombre'])[0]; ?>! 🚀</h2>
+            <p class="text-muted">Estudiante del <strong><?php echo $nombre_curso; ?></strong></p>
         </div>
-
+        
+        <?php 
+            // LÓGICA PARA MOSTRAR LA FOTO REAL
+            
+            // 1. Definir ruta por defecto (Icono genérico)
+            $avatar_url = "https://cdn-icons-png.flaticon.com/512/2995/2995620.png";
+            
+            // 2. Verificar si en la sesión hay una foto guardada
+            if (isset($_SESSION['foto']) && !empty($_SESSION['foto'])) {
+                $ruta_local = "../assets/uploads/perfiles/" . $_SESSION['foto'];
+                
+                // 3. Verificar si el archivo realmente existe en la carpeta
+                if (file_exists($ruta_local)) {
+                    $avatar_url = $ruta_local;
+                }
+            }
+        ?>
+        
+        <img src="<?php echo $avatar_url; ?>" 
+            width="50" height="50" 
+            class="rounded-circle border border-2 border-white shadow-sm" 
+            style="object-fit:cover;" 
+            alt="Avatar">
+    </div>
         <div class="row mb-5">
             
             <div class="col-md-4">
