@@ -2,10 +2,12 @@
 session_start();
 require '../config/db.php';
 require '../includes/funciones.php';
+
 // 1. SEGURIDAD
 if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'alumno') { 
     header("Location: ../login.php"); exit; 
 }
+$notificaciones_pendientes = contarNotificacionesNoLeidas($pdo, $_SESSION['user_id']);
 
 $alumno_id = $_SESSION['user_id'];
 
@@ -83,6 +85,7 @@ $avatar = isset($_SESSION['foto']) && !empty($_SESSION['foto']) ? "../assets/upl
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 </head>
 <body>
 

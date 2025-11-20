@@ -13,25 +13,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $usuario = $stmt->fetch();
 
     if ($usuario) {
-        // LÓGICA HÍBRIDA DE SEGURIDAD
-        // 1. Verificamos si es un Hash seguro
-        $login_exitoso = password_verify($password, $usuario['password']);
-
-        // 2. Si falló, verificamos si es una clave antigua (texto plano)
-        if (!$login_exitoso && $password === $usuario['password']) {
-            $login_exitoso = true;
-            
-            // Opcional: Actualizar automáticamente a encriptada para la próxima
-            $nuevo_hash = password_hash($password, PASSWORD_DEFAULT);
-            $pdo->prepare("UPDATE usuarios SET password = ? WHERE id = ?")->execute([$nuevo_hash, $usuario['id']]);
-        }
+        // Verificar contraseña (Híbrido: Hash o Texto plano para legacy)
+        $login_exitoso = password_verify($password, $usuario['password']) || ($password === $usuario['password']);
 
         if ($login_exitoso) {
+            // Guardar Sesión
             $_SESSION['user_id'] = $usuario['id'];
             $_SESSION['nombre'] = $usuario['nombre'];
             $_SESSION['rol'] = $usuario['rol'];
             $_SESSION['foto'] = $usuario['foto'];
-            // Redirección según rol
+
+            // --- NUEVO: LIMPIEZA AUTOMÁTICA (El Basurero) ---
+            // Borra notificaciones de más de 7 días de antigüedad
+            try {
+                $pdo->query("DELETE FROM notificaciones WHERE fecha < DATE_SUB(NOW(), INTERVAL 7 DAY)");
+            } catch (Exception $e) {
+                // Si falla la limpieza, no detenemos el login, solo seguimos.
+            }
+            // ------------------------------------------------
+
+            // Redirección
             switch ($usuario['rol']) {
                 case 'alumno': header("Location: alumno/dashboard.php"); break;
                 case 'profesor': header("Location: profesor/dashboard.php"); break;
@@ -48,44 +49,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Login Institucional</title>
+    <title>Acceso Institucional</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet"> </head>
+    <link href="assets/css/style.css" rel="stylesheet">
+</head>
 <body>
-    
     <div class="login-bg">
         <div class="login-card">
             <div class="text-center mb-4">
                 <img src="https://cdn-icons-png.flaticon.com/512/167/167707.png" width="80" class="mb-3">
                 <h3>Bienvenido</h3>
-                <p class="text-muted">Sistema de Gestión Escolar</p>
+                <p class="text-muted">Intranet Escolar</p>
             </div>
-
             <?php if(!empty($mensaje)): ?>
                 <div class="alert alert-danger text-center p-2 small"><?php echo $mensaje; ?></div>
             <?php endif; ?>
-
             <form method="POST">
                 <div class="form-floating mb-3">
                     <input type="email" name="email" class="form-control" id="floatingInput" placeholder="name@example.com" required>
-                    <label for="floatingInput">Correo Electrónico</label>
+                    <label for="floatingInput">Correo Institucional</label>
                 </div>
                 <div class="form-floating mb-4">
                     <input type="password" name="password" class="form-control" id="floatingPassword" placeholder="Password" required>
                     <label for="floatingPassword">Contraseña</label>
                 </div>
-                <button type="submit" class="btn btn-success w-100 py-2 fw-bold">INICIAR SESIÓN</button>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">INGRESAR</button>
             </form>
-            
-            <div class="text-center mt-3">
-                <small class="text-muted">¿Olvidaste tu contraseña? Contacta a administración.</small>
-            </div>
         </div>
     </div>
-
 </body>
 </html>

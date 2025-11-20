@@ -1,7 +1,8 @@
 <?php
 session_start();
 require '../config/db.php';
-require '../includes/funciones.php';
+require_once '../includes/funciones.php'; // IMPORTANTE: Para enviar notificaciones
+
 if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'profesor') { header("Location: ../login.php"); exit; }
 
 $prog_id = $_GET['id'] ?? null;
@@ -9,7 +10,7 @@ if (!$prog_id) die("Falta ID.");
 
 $mensaje = "";
 
-// 1. GUARDAR
+// 1. GUARDAR ASISTENCIA
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fecha = $_POST['fecha'];
     $horario_id = $_POST['horario_id'];
@@ -20,13 +21,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         $pdo->beginTransaction();
         try {
+            // Borrar registro previo para evitar duplicados
             $pdo->prepare("DELETE FROM asistencia WHERE programacion_id = ? AND fecha = ? AND horario_id = ?")->execute([$prog_id, $fecha, $horario_id]);
+            
             $stmtIns = $pdo->prepare("INSERT INTO asistencia (programacion_id, alumno_id, horario_id, fecha, estado) VALUES (?, ?, ?, ?, ?)");
+            
+            // Preparar consulta para buscar apoderado (optimización)
+            $stmtPapa = $pdo->prepare("SELECT apoderado_id FROM familia WHERE alumno_id = ?");
+
             foreach ($asistencias as $alumno_id => $estado) {
+                // Guardar asistencia
                 $stmtIns->execute([$prog_id, $alumno_id, $horario_id, $fecha, $estado]);
+
+                // --- LÓGICA DE NOTIFICACIÓN DE AUSENCIA ---
+                if ($estado == 'ausente') {
+                    // Buscar al apoderado
+                    $stmtPapa->execute([$alumno_id]);
+                    $id_papa = $stmtPapa->fetchColumn();
+
+                    if ($id_papa) {
+                        $msg = "Alerta de Asistencia: Tu pupilo ha sido marcado como AUSENTE el " . date("d/m/Y", strtotime($fecha));
+                        // Enviamos la notificación al papá
+                        enviarNotificacion($pdo, $id_papa, $msg, 'dashboard.php');
+                    }
+                }
+                // -----------------------------------------
             }
             $pdo->commit();
-            $mensaje = "Asistencia guardada exitosamente.";
+            $mensaje = "Asistencia guardada y apoderados notificados (si corresponde).";
         } catch (Exception $e) {
             $pdo->rollBack();
             $mensaje = "Error: " . $e->getMessage();
@@ -34,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// 2. DATOS
+// 2. DATOS DE LA VISTA
 $fecha_seleccionada = isset($_GET['fecha_filtro']) ? $_GET['fecha_filtro'] : date('Y-m-d');
 $dias_ingles = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 $dias_espanol = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -59,36 +81,22 @@ $lista_alumnos = $alumnos->fetchAll();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
     <style>
-        .btn-status {
-            width: 120px;
-            font-weight: bold;
-            font-size: 0.85rem;
-            border-radius: 20px;
-            transition: all 0.2s;
-        }
+        .btn-status { width: 130px; font-weight: bold; border-radius: 20px; transition: all 0.2s; }
         .avatar-small { width: 35px; height: 35px; object-fit: cover; border-radius: 50%; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo mb-4"><i class="bi bi-mortarboard-fill"></i> ColegioApp</div>
-        <a href="dashboard.php" class="active"><i class="bi bi-speedometer2"></i> <span>Mis Cursos</span></a>
-        <a href="mensajes.php"><i class="bi bi-chat-dots"></i> <span>Mensajería</span></a>
-        <a href="perfil.php"><i class="bi bi-person-circle"></i> <span>Mi Perfil</span></a>
-        <div class="mt-5"><a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-left"></i> <span>Salir</span></a></div>
-    </div>
+    <?php include '../includes/sidebar_profesor.php'; ?>
 
     <div class="main-content">
         
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h4 class="fw-bold mb-1">Asistencia: <?php echo $curso['curso']; ?></h4>
-                <p class="text-muted mb-0 small">Gestiona la asistencia diaria.</p>
+                <p class="text-muted mb-0 small">Los apoderados serán notificados automáticamente de las ausencias.</p>
             </div>
-            <a href="ver_curso.php?id=<?php echo $prog_id; ?>" class="btn btn-outline-secondary rounded-pill">
-                <i class="bi bi-arrow-left"></i> Volver
-            </a>
+            <a href="ver_curso.php?id=<?php echo $prog_id; ?>" class="btn btn-outline-secondary rounded-pill">Volver</a>
         </div>
 
         <?php if($mensaje): ?>
@@ -131,16 +139,12 @@ $lista_alumnos = $alumnos->fetchAll();
                 </div>
 
                 <div class="card shadow border-0">
-                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-bold">Lista de Estudiantes</h6>
-                        <span class="badge bg-light text-dark border"><?php echo count($lista_alumnos); ?> Alumnos</span>
-                    </div>
                     <div class="card-body p-0">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light">
                                 <tr>
                                     <th class="ps-4">Estudiante</th>
-                                    <th class="text-center">Estado</th>
+                                    <th class="text-center">Estado (Click para cambiar)</th>
                                 </tr>
                             </thead>
                             <tbody>

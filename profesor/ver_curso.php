@@ -1,7 +1,8 @@
 <?php
 session_start();
 require '../config/db.php';
-require '../includes/funciones.php';
+require_once '../includes/funciones.php'; // IMPORTANTE: Incluir funciones
+
 // 1. SEGURIDAD
 if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'profesor') {
     header("Location: ../login.php"); exit;
@@ -48,11 +49,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['crear_actividad'])) {
     $sqlInsert = "INSERT INTO actividades (programacion_id, titulo, descripcion, archivo_adjunto, tipo, fecha_limite) 
                   VALUES (:prog_id, :tit, :desc, :arch, :tipo, :fecha)";
     $stmtInsert = $pdo->prepare($sqlInsert);
+    
     if ($stmtInsert->execute([
         'prog_id' => $id_programacion, 'tit' => $titulo, 'desc' => $descripcion, 
         'arch' => $ruta_archivo, 'tipo' => $tipo, 'fecha' => $fecha_limite
     ])) {
-        $mensaje = "Contenido publicado correctamente.";
+        // --- LÓGICA DE NOTIFICACIÓN MASIVA ---
+        // 1. Buscamos a los alumnos del curso
+        $stmtAlumnos = $pdo->prepare("SELECT alumno_id FROM matriculas WHERE curso_id = (SELECT curso_id FROM programacion_academica WHERE id = ?)");
+        $stmtAlumnos->execute([$id_programacion]);
+        $lista_alumnos = $stmtAlumnos->fetchAll();
+
+        // 2. Preparamos mensaje
+        $msg_notif = "Nuevo contenido en " . $datos_curso['asignatura'] . ": " . $titulo;
+        $link_notif = "ver_curso.php?id=" . $id_programacion;
+
+        // 3. Enviamos a todos
+        foreach($lista_alumnos as $alum) {
+            enviarNotificacion($pdo, $alum['alumno_id'], $msg_notif, $link_notif);
+        }
+        // -------------------------------------
+
+        $mensaje = "Contenido publicado y notificaciones enviadas.";
     }
 }
 
@@ -74,7 +92,9 @@ $actividades = $stmtAct->fetchAll();
 </head>
 <body class="bg-light">
     
-    <div class="container mt-4 mb-5">
+    <?php include '../includes/sidebar_profesor.php'; ?>
+
+    <div class="main-content">
         
         <div class="course-hero d-flex justify-content-between align-items-center">
             <div style="position: relative; z-index: 2;">
@@ -94,10 +114,10 @@ $actividades = $stmtAct->fetchAll();
         </div>
 
         <?php if($mensaje): ?>
-            <div class="alert alert-success"><?php echo $mensaje; ?></div>
+            <div class="alert alert-success shadow-sm border-0"><?php echo $mensaje; ?></div>
         <?php endif; ?>
 
-        <div class="row">
+        <div class="row mt-4">
             
             <div class="col-md-4">
                 <div class="card shadow-sm sticky-top" style="top: 20px; z-index: 1;">
@@ -148,7 +168,6 @@ $actividades = $stmtAct->fetchAll();
                 <?php else: ?>
                     <?php foreach ($actividades as $act): ?>
                         <?php 
-                            // Estilos según tipo
                             $borderClass = "type-material";
                             $icon = '<i class="bi bi-file-earmark-text text-primary"></i>';
                             $badge = '<span class="badge bg-primary-subtle text-primary">Material</span>';
@@ -198,6 +217,7 @@ $actividades = $stmtAct->fetchAll();
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function toggleFecha() {
             let tipo = document.getElementById('tipoSelect').value;

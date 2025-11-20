@@ -17,10 +17,25 @@
         <i class="bi bi-person-circle"></i> <span>Mi Perfil</span>
     </a>
 
-    <a href="../notificaciones.php" class="d-flex justify-content-between align-items-center pe-3">
-        <span><i class="bi bi-bell-fill"></i> Avisos</span>
-        <?php if(isset($notificaciones_pendientes) && $notificaciones_pendientes > 0): ?>
-            <span class="badge bg-danger rounded-pill shadow-sm animate__animated animate__pulse animate__infinite">
+    <?php 
+        // Lógica visual: ¿Hay notificaciones?
+        $hay_avisos = (isset($notificaciones_pendientes) && $notificaciones_pendientes > 0);
+        
+        // Si hay avisos: Texto amarillo
+        $clase_extra = $hay_avisos ? 'text-warning fw-bold' : ''; 
+        
+        // Si hay avisos: Icono relleno y animación 'swing' (balanceo)
+        $icono = $hay_avisos ? 'bi-bell-fill animate__animated animate__swing animate__infinite' : 'bi-bell'; 
+    ?>
+
+    <a href="../notificaciones.php" class="d-flex justify-content-between align-items-center pe-3 <?php echo $clase_extra; ?>">
+        <span>
+            <i class="bi <?php echo $icono; ?>"></i> 
+            Avisos
+        </span>
+        
+        <?php if($hay_avisos): ?>
+            <span class="badge bg-danger rounded-pill shadow-sm border border-light">
                 <?php echo $notificaciones_pendientes; ?>
             </span>
         <?php endif; ?>
