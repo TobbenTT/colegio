@@ -1,7 +1,7 @@
 <?php
 session_start();
 require '../config/db.php';
-
+require '../includes/funciones.php';
 // 1. Seguridad
 if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'profesor') { header("Location: ../login.php"); exit; }
 
@@ -44,13 +44,7 @@ $total_alumnos = $stmtAlu->fetchColumn();
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo mb-4"><i class="bi bi-mortarboard-fill"></i> ColegioApp</div>
-        <a href="dashboard.php" class="active"><i class="bi bi-speedometer2"></i> <span>Mis Cursos</span></a>
-        <a href="mensajes.php"><i class="bi bi-chat-dots"></i> <span>Mensajería</span></a>
-        <a href="perfil.php"><i class="bi bi-person-circle"></i> <span>Mi Perfil</span></a>
-        <div class="mt-5"><a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-left"></i> <span>Salir</span></a></div>
-    </div>
+<?php include '../includes/sidebar_profesor.php'; ?>
 
     <div class="main-content">
         

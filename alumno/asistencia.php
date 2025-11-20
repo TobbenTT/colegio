@@ -1,6 +1,7 @@
 <?php
 session_start();
 require '../config/db.php';
+require '../includes/funciones.php';
 if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'alumno') { header("Location: ../login.php"); exit; }
 
 $alumno_id = $_SESSION['user_id'];

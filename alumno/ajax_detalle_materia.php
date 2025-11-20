@@ -1,7 +1,7 @@
 <?php
 session_start();
 require '../config/db.php';
-
+require '../includes/funciones.php';
 if (!isset($_SESSION['user_id']) || !isset($_POST['id'])) {
     echo "Error de acceso"; exit;
 }

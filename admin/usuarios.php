@@ -1,7 +1,7 @@
 <?php
 session_start();
 require '../config/db.php';
-
+require '../includes/funciones.php';
 // 1. Seguridad
 if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'administrador') { 
     header("Location: ../login.php"); exit; 

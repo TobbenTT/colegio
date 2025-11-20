@@ -1,7 +1,7 @@
 <?php
 session_start();
 require '../config/db.php';
-
+require '../includes/funciones.php';
 if (!isset($_SESSION['user_id'])) { header("Location: ../login.php"); exit; }
 
 $id_usuario = $_SESSION['user_id'];
