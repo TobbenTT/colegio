@@ -1,0 +1,290 @@
+/* assets/css/style.css */
+
+/* 1. IMPORTAR FUENTE MODERNA */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+    /* Paleta de Colores Personalizada */
+    --primary-color: #2c3e50;  /* Azul oscuro elegante */
+    --secondary-color: #34495e;
+    --accent-color: #1abc9c;   /* Verde agua (Teal) para botones/acciones */
+    --bg-light: #f4f7f6;       /* Gris muy suave para el fondo */
+    --text-dark: #333;
+    --sidebar-width: 250px;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+}
+
+/* 2. MEJORAS EN TARJETAS (CARDS) */
+.card {
+    border: none; /* Sin bordes feos */
+    border-radius: 12px; /* Bordes redondeados */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05); /* Sombra suave */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Efecto al pasar el mouse por encima de una tarjeta */
+.card:hover {
+    transform: translateY(-5px); /* Se levanta un poco */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    font-weight: 600;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+/* 3. BOTONES PERSONALIZADOS */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    padding: 10px 20px;
+    border-radius: 8px;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+}
+
+.btn-success {
+    background-color: var(--accent-color);
+    border: none;
+}
+
+/* 4. LOGIN PAGE (Fondo bonito) */
+.login-bg {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.95); /* Casi blanco */
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 400px;
+}
+
+/* 5. SIDEBAR (Menu Lateral) */
+.sidebar {
+    height: 100vh;
+    width: var(--sidebar-width);
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: var(--primary-color);
+    padding-top: 20px;
+    color: white;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+}
+
+.sidebar a {
+    padding: 15px 25px;
+    text-decoration: none;
+    font-size: 1rem;
+    color: #bdc3c7;
+    display: block;
+    transition: 0.3s;
+    border-left: 4px solid transparent;
+}
+
+.sidebar a:hover, .sidebar a.active {
+    color: #fff;
+    background-color: rgba(255,255,255,0.1);
+    border-left: 4px solid var(--accent-color);
+}
+
+.sidebar .logo {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #fff;
+}
+
+/* Ajuste del contenido principal para que no quede debajo del sidebar */
+.main-content {
+    margin-left: var(--sidebar-width); /* Empujamos el contenido a la derecha */
+    padding: 30px;
+}
+
+/* RESPONSIVE: En móviles ocultamos sidebar */
+@media (max-width: 768px) {
+    .sidebar { width: 70px; }
+    .sidebar a span { display: none; } /* Ocultar texto, dejar solo iconos */
+    .main-content { margin-left: 70px; }
+}
+
+/* --- NUEVO EN style.css --- */
+
+/* 1. HERO BANNER (Encabezado del Curso) */
+.course-hero {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 3rem 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(44, 62, 80, 0.3);
+}
+
+/* Círculos decorativos de fondo (Efecto moderno) */
+.course-hero::before {
+    content: "";
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+}
+.course-hero::after {
+    content: "";
+    position: absolute;
+    bottom: -30px;
+    left: 50px;
+    width: 100px;
+    height: 100px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+}
+
+/* 2. TABLAS MODERNAS */
+.table-modern {
+    border-collapse: separate;
+    border-spacing: 0 10px; /* Separación entre filas */
+}
+
+.table-modern thead th {
+    border: none;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    color: #888;
+    padding-bottom: 15px;
+}
+
+.table-modern tbody tr {
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    transition: transform 0.2s;
+}
+
+.table-modern tbody tr:hover {
+    transform: scale(1.01);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.table-modern td {
+    border: none;
+    padding: 15px 20px;
+    vertical-align: middle;
+}
+
+.table-modern td:first-child {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+.table-modern td:last-child {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+/* 3. TARJETAS DE ACTIVIDADES (Iconos grandes) */
+.activity-card {
+    border-left: 5px solid transparent;
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+}
+
+.activity-card.type-tarea { border-left-color: #e74c3c; } /* Rojo para tareas */
+.activity-card.type-material { border-left-color: #3498db; } /* Azul para material */
+
+.file-icon {
+    font-size: 2.5rem;
+    margin-right: 1.5rem;
+    opacity: 0.8;
+}
+
+.type-tarea .file-icon { color: #e74c3c; }
+.type-material .file-icon { color: #3498db; }
+
+/* 1. TARJETAS DE ESTADÍSTICAS (DASHBOARD ALUMNO) */
+.stat-card {
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+    border: none;
+    transition: transform 0.3s ease;
+    color: white;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+/* Gradientes para las tarjetas */
+.bg-gradient-primary { background: linear-gradient(45deg, #4e54c8, #8f94fb); }
+.bg-gradient-danger { background: linear-gradient(45deg, #ff416c, #ff4b2b); }
+.bg-gradient-success { background: linear-gradient(45deg, #11998e, #38ef7d); }
+.bg-gradient-warning { background: linear-gradient(45deg, #f7971e, #ffd200); }
+
+.stat-icon {
+    position: absolute;
+    right: 20px;
+    bottom: 10px;
+    font-size: 3.5rem;
+    opacity: 0.2;
+    transform: rotate(-15deg);
+}
+
+/* 2. TARJETAS DE CURSOS (Estilo Grid) */
+.course-card-student {
+    border-top: 5px solid var(--accent-color);
+    background: white;
+    border-radius: 10px;
+}
+
+.course-card-student .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background-color: var(--bg-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+/* 3. ZONA DE ENTREGA (Upload Zone) */
+.upload-zone {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    background-color: #fafafa;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.upload-zone:hover {
+    border-color: var(--accent-color);
+    background-color: #f0fdfa;
+}

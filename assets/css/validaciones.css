@@ -1,0 +1,44 @@
+/* assets/css/validaciones.css */
+
+/* BLOQUE DE REQUISITOS (Estilo Infalible) */
+#password-requirements {
+    display: none; /* Oculto al inicio */
+    background-color: #f8f9fa; /* Gris muy claro */
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+    font-size: 0.9rem;
+    /* Sin position: absolute para que no se oculte */
+}
+
+/* Lista */
+#password-requirements ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#password-requirements li {
+    margin-bottom: 4px;
+    color: #6c757d;
+    transition: color 0.2s ease;
+}
+
+/* ESTADOS DE VALIDACIÓN */
+.invalid { color: #dc3545 !important; } /* Rojo */
+.invalid::before { content: "✕ "; font-weight: bold; margin-right: 6px; }
+
+.valid { color: #198754 !important; } /* Verde */
+.valid::before { content: "✓ "; font-weight: bold; margin-right: 6px; }
+
+/* BARRA DE PROGRESO */
+.password-strength {
+    height: 4px;
+    background: #e9ecef;
+    margin-top: 6px;
+    border-radius: 2px;
+    transition: width 0.3s, background-color 0.3s;
+}
