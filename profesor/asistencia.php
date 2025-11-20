@@ -5,32 +5,28 @@ require '../config/db.php';
 if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'profesor') { header("Location: ../login.php"); exit; }
 
 $prog_id = $_GET['id'] ?? null;
-if (!$prog_id) die("Falta ID del curso");
+if (!$prog_id) die("Falta ID.");
 
 $mensaje = "";
 
-// --- 1. LÓGICA PARA GUARDAR (POST) ---
+// 1. GUARDAR
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fecha = $_POST['fecha'];
     $horario_id = $_POST['horario_id'];
-    $asistencias = $_POST['asistencia']; // Array [id_alumno => estado]
+    $asistencias = $_POST['asistencia']; 
 
     if(empty($horario_id)) {
-        $mensaje = "Error: Debes seleccionar un bloque horario.";
+        $mensaje = "⚠️ Error: Selecciona un bloque horario.";
     } else {
         $pdo->beginTransaction();
         try {
-            // Borrar anterior
-            $stmtDel = $pdo->prepare("DELETE FROM asistencia WHERE programacion_id = ? AND fecha = ? AND horario_id = ?");
-            $stmtDel->execute([$prog_id, $fecha, $horario_id]);
-
-            // Insertar nueva
+            $pdo->prepare("DELETE FROM asistencia WHERE programacion_id = ? AND fecha = ? AND horario_id = ?")->execute([$prog_id, $fecha, $horario_id]);
             $stmtIns = $pdo->prepare("INSERT INTO asistencia (programacion_id, alumno_id, horario_id, fecha, estado) VALUES (?, ?, ?, ?, ?)");
             foreach ($asistencias as $alumno_id => $estado) {
                 $stmtIns->execute([$prog_id, $alumno_id, $horario_id, $fecha, $estado]);
             }
             $pdo->commit();
-            $mensaje = "Asistencia guardada correctamente.";
+            $mensaje = "Asistencia guardada exitosamente.";
         } catch (Exception $e) {
             $pdo->rollBack();
             $mensaje = "Error: " . $e->getMessage();
@@ -38,128 +34,142 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// --- 2. OBTENER DATOS ---
+// 2. DATOS
 $fecha_seleccionada = isset($_GET['fecha_filtro']) ? $_GET['fecha_filtro'] : date('Y-m-d');
-
-// Traducción de día
 $dias_ingles = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 $dias_espanol = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-$dia_nombre_ingles = date('l', strtotime($fecha_seleccionada));
-$dia_semana_actual = str_replace($dias_ingles, $dias_espanol, $dia_nombre_ingles);
+$dia_semana_actual = str_replace($dias_ingles, $dias_espanol, date('l', strtotime($fecha_seleccionada)));
 
-// Bloques horarios
-$sqlBloques = "SELECT id, hora_inicio, hora_fin FROM horarios WHERE programacion_id = ? AND dia = ?";
-$stmtB = $pdo->prepare($sqlBloques);
+$stmtB = $pdo->prepare("SELECT id, hora_inicio, hora_fin FROM horarios WHERE programacion_id = ? AND dia = ?");
 $stmtB->execute([$prog_id, $dia_semana_actual]);
 $bloques_disponibles = $stmtB->fetchAll();
 
-// Datos del curso
-$curso = $pdo->query("SELECT curso_id, (SELECT nombre FROM cursos WHERE id=programacion_academica.curso_id) as nombre FROM programacion_academica WHERE id=$prog_id")->fetch();
-
-// Alumnos
-$alumnos = $pdo->prepare("SELECT u.id, u.nombre FROM matriculas m JOIN usuarios u ON m.alumno_id = u.id WHERE m.curso_id = ? AND u.rol='alumno' ORDER BY u.nombre ASC");
-$alumnos->execute([$curso['curso_id']]);
+$curso = $pdo->query("SELECT c.nombre as curso FROM programacion_academica pa JOIN cursos c ON pa.curso_id = c.id WHERE pa.id=$prog_id")->fetch();
+$alumnos = $pdo->prepare("SELECT u.id, u.nombre, u.foto FROM matriculas m JOIN usuarios u ON m.alumno_id = u.id WHERE m.curso_id = (SELECT curso_id FROM programacion_academica WHERE id=?) AND u.rol='alumno' ORDER BY u.nombre");
+$alumnos->execute([$prog_id]);
 $lista_alumnos = $alumnos->fetchAll();
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <title>Tomar Asistencia</title>
+    <meta charset="UTF-8">
+    <title>Pasar Lista</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="../assets/css/style.css" rel="stylesheet">
     <style>
-        /* Estilo para que el botón se vea grande y fácil de cliquear */
-        .btn-asistencia {
-            width: 140px;
+        .btn-status {
+            width: 120px;
             font-weight: bold;
+            font-size: 0.85rem;
+            border-radius: 20px;
             transition: all 0.2s;
         }
+        .avatar-small { width: 35px; height: 35px; object-fit: cover; border-radius: 50%; }
     </style>
 </head>
-<body class="bg-light">
-    <div class="container mt-4 pb-5">
-        <div class="d-flex justify-content-between mb-3">
-            <h3>Pasar Lista: <?php echo $curso['nombre']; ?></h3>
-            <a href="ver_curso.php?id=<?php echo $prog_id; ?>" class="btn btn-secondary">Volver</a>
+<body>
+
+    <div class="sidebar">
+        <div class="logo mb-4"><i class="bi bi-mortarboard-fill"></i> ColegioApp</div>
+        <a href="dashboard.php" class="active"><i class="bi bi-speedometer2"></i> <span>Mis Cursos</span></a>
+        <a href="mensajes.php"><i class="bi bi-chat-dots"></i> <span>Mensajería</span></a>
+        <a href="perfil.php"><i class="bi bi-person-circle"></i> <span>Mi Perfil</span></a>
+        <div class="mt-5"><a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-left"></i> <span>Salir</span></a></div>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">Asistencia: <?php echo $curso['curso']; ?></h4>
+                <p class="text-muted mb-0 small">Gestiona la asistencia diaria.</p>
+            </div>
+            <a href="ver_curso.php?id=<?php echo $prog_id; ?>" class="btn btn-outline-secondary rounded-pill">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
         </div>
 
-        <?php if($mensaje): ?><div class="alert alert-success"><?php echo $mensaje; ?></div><?php endif; ?>
+        <?php if($mensaje): ?>
+            <div class="alert alert-success shadow-sm border-0 mb-4"><?php echo $mensaje; ?></div>
+        <?php endif; ?>
 
-        <div class="card shadow mb-4 p-3">
-            <form method="GET" id="formFecha" class="row g-3 align-items-end">
-                <input type="hidden" name="id" value="<?php echo $prog_id; ?>">
-                <div class="col-md-4">
-                    <label class="fw-bold">Selecciona Fecha:</label>
-                    <input type="date" name="fecha_filtro" class="form-control" 
-                           value="<?php echo $fecha_seleccionada; ?>" 
-                           onchange="document.getElementById('formFecha').submit()">
-                </div>
-                <div class="col-md-8">
-                    <small class="text-muted">Día: <strong><?php echo $dia_semana_actual; ?></strong></small>
-                </div>
-            </form>
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body bg-light rounded-3">
+                <form method="GET" id="formFecha" class="row g-3 align-items-center">
+                    <input type="hidden" name="id" value="<?php echo $prog_id; ?>">
+                    <div class="col-auto"><label class="fw-bold text-secondary">Fecha:</label></div>
+                    <div class="col-auto">
+                        <input type="date" name="fecha_filtro" class="form-control" value="<?php echo $fecha_seleccionada; ?>" onchange="document.getElementById('formFecha').submit()">
+                    </div>
+                    <div class="col-auto"><span class="badge bg-primary-subtle text-primary border border-primary-subtle"><?php echo $dia_semana_actual; ?></span></div>
+                </form>
+            </div>
         </div>
 
         <form method="POST">
             <input type="hidden" name="fecha" value="<?php echo $fecha_seleccionada; ?>">
 
             <?php if(count($bloques_disponibles) == 0): ?>
-                <div class="alert alert-warning text-center">
-                    ⚠️ No hay clases programadas para este día (<?php echo $dia_semana_actual; ?>).
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-calendar-x display-1 opacity-25"></i>
+                    <h5 class="mt-3">Sin clases programadas</h5>
+                    <p>No hay horarios configurados para los <?php echo $dia_semana_actual; ?>s.</p>
                 </div>
             <?php else: ?>
                 
-                <div class="card mb-3 border-primary">
-                    <div class="card-body bg-white">
-                        <label class="fw-bold text-primary">Selecciona el Bloque:</label>
-                        <select name="horario_id" class="form-select mt-2" required>
-                            <?php foreach($bloques_disponibles as $bloque): ?>
-                                <option value="<?php echo $bloque['id']; ?>">
-                                    De <?php echo substr($bloque['hora_inicio'], 0, 5); ?> a <?php echo substr($bloque['hora_fin'], 0, 5); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Seleccionar Bloque Horario</label>
+                    <select name="horario_id" class="form-select form-select-lg border-primary" required>
+                        <?php foreach($bloques_disponibles as $bloque): ?>
+                            <option value="<?php echo $bloque['id']; ?>">
+                                ⏰ <?php echo substr($bloque['hora_inicio'], 0, 5); ?> a <?php echo substr($bloque['hora_fin'], 0, 5); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
-                <div class="card shadow">
-                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                        <span>Alumnos</span>
-                        <button type="submit" class="btn btn-light btn-sm fw-bold">💾 GUARDAR TODO</button>
+                <div class="card shadow border-0">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold">Lista de Estudiantes</h6>
+                        <span class="badge bg-light text-dark border"><?php echo count($lista_alumnos); ?> Alumnos</span>
                     </div>
-                    
-                    <table class="table table-modern align-middle mb-0">
-                        <thead class="table-secondary">
-                            <tr>
-                                <th>Estudiante</th>
-                                <th class="text-center">Estado (Click para cambiar)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach($lista_alumnos as $alu): ?>
+                    <div class="card-body p-0">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
                                 <tr>
-                                    <td class="fw-bold"><?php echo $alu['nombre']; ?></td>
-                                    <td class="text-center">
-                                        <input type="hidden" 
-                                               id="input_<?php echo $alu['id']; ?>" 
-                                               name="asistencia[<?php echo $alu['id']; ?>]" 
-                                               value="presente">
-
-                                        <button type="button" 
-                                                id="btn_<?php echo $alu['id']; ?>"
-                                                class="btn btn-success btn-asistencia"
-                                                onclick="cambiarEstado(<?php echo $alu['id']; ?>)">
-                                            PRESENTE
-                                        </button>
-                                    </td>
+                                    <th class="ps-4">Estudiante</th>
+                                    <th class="text-center">Estado</th>
                                 </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <?php foreach($lista_alumnos as $alu): ?>
+                                    <?php $foto = $alu['foto'] ? "../assets/uploads/perfiles/".$alu['foto'] : "https://cdn-icons-png.flaticon.com/512/2995/2995620.png"; ?>
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center">
+                                                <img src="<?php echo $foto; ?>" class="avatar-small me-3">
+                                                <span class="fw-bold text-dark"><?php echo $alu['nombre']; ?></span>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="hidden" id="input_<?php echo $alu['id']; ?>" name="asistencia[<?php echo $alu['id']; ?>]" value="presente">
+                                            <button type="button" id="btn_<?php echo $alu['id']; ?>" class="btn btn-success btn-status" onclick="cambiarEstado(<?php echo $alu['id']; ?>)">
+                                                <i class="bi bi-check-circle-fill"></i> PRESENTE
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                
-                <div class="d-grid mt-3">
-                    <button type="submit" class="btn btn-primary btn-lg shadow">💾 Guardar Asistencia</button>
+
+                <div class="d-grid mt-4 mb-5">
+                    <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm">
+                        <i class="bi bi-save"></i> GUARDAR REGISTRO
+                    </button>
                 </div>
 
             <?php endif; ?>
@@ -167,33 +177,26 @@ $lista_alumnos = $alumnos->fetchAll();
     </div>
 
     <script>
-        function cambiarEstado(idAlumno) {
-            // Obtenemos el input oculto y el botón visual
-            const input = document.getElementById('input_' + idAlumno);
-            const btn = document.getElementById('btn_' + idAlumno);
+        function cambiarEstado(id) {
+            const input = document.getElementById('input_' + id);
+            const btn = document.getElementById('btn_' + id);
             
-            const estadoActual = input.value;
-
-            // LÓGICA DE CICLO: Presente -> Ausente -> Atrasado -> Presente
-            if (estadoActual === 'presente') {
-                // Cambiar a AUSENTE
+            if (input.value === 'presente') {
                 input.value = 'ausente';
-                btn.className = 'btn btn-danger btn-asistencia'; // Rojo
-                btn.innerText = 'AUSENTE';
-            } 
-            else if (estadoActual === 'ausente') {
-                // Cambiar a ATRASADO
+                btn.className = 'btn btn-danger btn-status';
+                btn.innerHTML = '<i class="bi bi-x-circle-fill"></i> AUSENTE';
+            } else if (input.value === 'ausente') {
                 input.value = 'atrasado';
-                btn.className = 'btn btn-warning btn-asistencia'; // Amarillo
-                btn.innerText = 'ATRASADO';
-            } 
-            else {
-                // Volver a PRESENTE
+                btn.className = 'btn btn-warning text-dark btn-status';
+                btn.innerHTML = '<i class="bi bi-clock-history"></i> ATRASO';
+            } else {
                 input.value = 'presente';
-                btn.className = 'btn btn-success btn-asistencia'; // Verde
-                btn.innerText = 'PRESENTE';
+                btn.className = 'btn btn-success btn-status';
+                btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> PRESENTE';
             }
         }
     </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
