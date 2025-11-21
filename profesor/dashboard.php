@@ -2,6 +2,7 @@
 session_start();
 require '../config/db.php';
 require '../includes/funciones.php';
+
 // 1. Seguridad
 if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'profesor') { header("Location: ../login.php"); exit; }
 
@@ -45,7 +46,6 @@ $total_alumnos = $stmtAlu->fetchColumn();
 <body>
 
 <?php include '../includes/sidebar_profesor.php'; ?>
-
     <div class="main-content">
         
         <div class="d-flex justify-content-between align-items-center mb-5">
@@ -58,6 +58,7 @@ $total_alumnos = $stmtAlu->fetchColumn();
             ?>
             <img src="<?php echo $avatar; ?>" width="50" height="50" class="rounded-circle border shadow-sm" style="object-fit:cover;">
         </div>
+        <?php include '../includes/widget_anuncios.php'; ?>
 
         <div class="row mb-5">
             <div class="col-md-6">

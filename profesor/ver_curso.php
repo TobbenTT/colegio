@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['crear_actividad'])) {
     $titulo = $_POST['titulo'];
     $descripcion = $_POST['descripcion'];
     $tipo = $_POST['tipo'];
+    $porcentaje = $_POST['porcentaje'];
     $fecha_limite = !empty($_POST['fecha_limite']) ? $_POST['fecha_limite'] : NULL;
     
     $ruta_archivo = NULL;
@@ -46,13 +47,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['crear_actividad'])) {
         }
     }
 
-    $sqlInsert = "INSERT INTO actividades (programacion_id, titulo, descripcion, archivo_adjunto, tipo, fecha_limite) 
-                  VALUES (:prog_id, :tit, :desc, :arch, :tipo, :fecha)";
+    $sqlInsert = "INSERT INTO actividades (programacion_id, titulo, descripcion, archivo_adjunto, tipo, fecha_limite, porcentaje) 
+                VALUES (:prog_id, :tit, :desc, :arch, :tipo, :fecha, :porc)";
     $stmtInsert = $pdo->prepare($sqlInsert);
     
     if ($stmtInsert->execute([
         'prog_id' => $id_programacion, 'tit' => $titulo, 'desc' => $descripcion, 
-        'arch' => $ruta_archivo, 'tipo' => $tipo, 'fecha' => $fecha_limite
+        'arch' => $ruta_archivo, 'tipo' => $tipo, 'fecha' => $fecha_limite,
+        'porc' => $porcentaje
     ])) {
         // --- LÓGICA DE NOTIFICACIÓN MASIVA ---
         // 1. Buscamos a los alumnos del curso
@@ -143,7 +145,14 @@ $actividades = $stmtAct->fetchAll();
                                     <option value="prueba">📅 Prueba / Examen</option>
                                 </select>
                             </div>
-
+                            <div class="mb-2">
+                                <label class="small text-muted fw-bold">Ponderación (%)</label>
+                                <div class="input-group">
+                                    <input type="number" name="porcentaje" class="form-control" min="1" max="100" value="20" required>
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <div class="form-text text-xs">Ej: Una prueba suele valer 30-50%, una tarea 10-20%.</div>
+                            </div>
                             <div class="mb-2">
                                 <label class="small text-muted" id="labelFecha">Fecha Límite / Fecha Prueba</label>
                                 <input type="datetime-local" name="fecha_limite" class="form-control">

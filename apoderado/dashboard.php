@@ -32,6 +32,7 @@ $hijos = $stmt->fetchAll();
 
 <?php include '../includes/sidebar_apoderado.php'; ?>
 
+
     <div class="main-content">
         
         <div class="d-flex justify-content-between align-items-center mb-5">
@@ -59,6 +60,7 @@ $hijos = $stmt->fetchAll();
                                     $foto = $hijo['foto'] ? "../assets/uploads/perfiles/".$hijo['foto'] : "https://cdn-icons-png.flaticon.com/512/2995/2995620.png"; 
                                 ?>
                                 <img src="<?php echo $foto; ?>" class="rounded-circle mb-3 border border-4 border-white shadow" width="120" height="120" style="object-fit: cover;">
+                                <?php include '../includes/widget_anuncios.php'; ?>
                                 
                                 <h4 class="fw-bold text-dark mb-1"><?php echo $hijo['nombre']; ?></h4>
                                 <span class="badge bg-primary-subtle text-primary rounded-pill px-3 mb-4">

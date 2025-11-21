@@ -122,6 +122,8 @@ $avatar = isset($_SESSION['foto']) && !empty($_SESSION['foto']) ? "../assets/upl
             style="object-fit:cover;" 
             alt="Avatar">
     </div>
+    <?php include '../includes/widget_anuncios.php'; ?>
+
         <div class="row mb-5">
             
             <div class="col-md-4">

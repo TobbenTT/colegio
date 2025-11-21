@@ -3,6 +3,18 @@ session_start();
 // 1. Seguridad
 if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'director') { header("Location: ../login.php"); exit; }
 require '../includes/funciones.php';
+
+// PUBLICAR ANUNCIO
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['publicar_anuncio'])) {
+    $titulo = $_POST['titulo'];
+    $mensaje = $_POST['mensaje'];
+    $tipo = $_POST['tipo'];
+    
+    $pdo->prepare("INSERT INTO anuncios (titulo, mensaje, autor_id, tipo) VALUES (?, ?, ?, ?)")
+        ->execute([$titulo, $mensaje, $_SESSION['user_id'], $tipo]);
+        
+    // Opcional: Notificar a TODOS los usuarios del sistema (sería masivo, cuidado)
+}
 ?>
 
 <!DOCTYPE html>
@@ -15,13 +27,7 @@ require '../includes/funciones.php';
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 <body>
-
-    <div class="sidebar">
-        <div class="logo mb-4"><i class="bi bi-bank2"></i> Dirección</div>
-        <a href="dashboard.php" class="active"><i class="bi bi-grid-fill"></i> <span>Menú Principal</span></a>
-        <a href="resumen.php"><i class="bi bi-bar-chart-line-fill"></i> <span>Estadísticas</span></a>
-        <div class="mt-5"><a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-left"></i> <span>Salir</span></a></div>
-    </div>
+<?php include '../includes/sidebar_director.php'; ?>
 
     <div class="main-content">
         
@@ -33,6 +39,7 @@ require '../includes/funciones.php';
             <?php $foto = isset($_SESSION['foto']) ? "../assets/uploads/perfiles/".$_SESSION['foto'] : "https://cdn-icons-png.flaticon.com/512/2995/2995620.png"; ?>
             <img src="<?php echo $foto; ?>" width="50" height="50" class="rounded-circle border shadow-sm" style="object-fit: cover;">
         </div>
+        <?php include '../includes/widget_anuncios.php'; ?>
 
         <div class="row">
             
@@ -75,7 +82,28 @@ require '../includes/funciones.php';
                     </div>
                 </div>
             </div>
-
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-megaphone-fill"></i> Publicar Anuncio Oficial</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-8 mb-2">
+                                <input type="text" name="titulo" class="form-control" placeholder="Título (Ej: Suspensión de clases)" required>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <select name="tipo" class="form-select">
+                                    <option value="informativo">ℹ️ Info</option>
+                                    <option value="urgente">🚨 Urgente</option>
+                                </select>
+                            </div>
+                        </div>
+                        <textarea name="mensaje" class="form-control mb-3" rows="2" placeholder="Escribe el comunicado..." required></textarea>
+                        <button type="submit" name="publicar_anuncio" class="btn btn-primary w-100 fw-bold">PUBLICAR EN CARTELERA</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 

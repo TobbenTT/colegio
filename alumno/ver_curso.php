@@ -45,7 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['entrega_archivo'])) {
 }
 
 // 3. OBTENER INFO DEL CURSO Y PROFESOR
-$sqlInfo = "SELECT a.nombre as materia, c.nombre as curso, u.nombre as profe, u.email as email_profe
+$sqlInfo = "SELECT a.nombre as materia, c.nombre as curso, u.nombre as profe, u.email as email_profe, 
+            u.id as id_profe
             FROM programacion_academica pa
             JOIN asignaturas a ON pa.asignatura_id = a.id
             JOIN cursos c ON pa.curso_id = c.id
@@ -62,6 +63,25 @@ $sqlAct = "SELECT * FROM actividades WHERE programacion_id = ? ORDER BY created_
 $stmtAct = $pdo->prepare($sqlAct);
 $stmtAct->execute([$prog_id]);
 $actividades = $stmtAct->fetchAll();
+
+// LÓGICA DE MENSAJE RÁPIDO AL PROFESOR
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['msg_rapido'])) {
+    $profe_destino = $_POST['profe_id'];
+    $asunto = "Consulta de clase: " . $_POST['materia_nombre'];
+    $msg_texto = $_POST['mensaje_texto'];
+
+    $sqlMsg = "INSERT INTO mensajes (remitente_id, destinatario_id, asunto, mensaje) VALUES (?, ?, ?, ?)";
+    $stmtMsg = $pdo->prepare($sqlMsg);
+    if ($stmtMsg->execute([$alumno_id, $profe_destino, $asunto, $msg_texto])) {
+        
+        // Notificar al profe
+        $mi_nombre = $_SESSION['nombre'];
+        enviarNotificacion($pdo, $profe_destino, "Consulta de $mi_nombre en " . $_POST['materia_nombre'], "mensajes.php");
+        
+        $mensaje = "Mensaje enviado al profesor.";
+        $tipo_msg = "success";
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -75,25 +95,17 @@ $actividades = $stmtAct->fetchAll();
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo mb-4"><i class="bi bi-backpack2-fill"></i> Mi Colegio</div>
-        <a href="dashboard.php" class="active"><i class="bi bi-grid-fill"></i> <span>Mis Clases</span></a>
-        <a href="horario.php"><i class="bi bi-calendar-week"></i> <span>Horario</span></a>
-        <a href="asistencia.php"><i class="bi bi-clipboard-check"></i> <span>Asistencia</span></a>
-        <a href="mis_anotaciones.php"><i class="bi bi-exclamation-triangle"></i> <span>Hoja de Vida</span></a>
-        <a href="perfil.php"><i class="bi bi-person-circle"></i> <span>Mi Perfil</span></a>
-        <div class="mt-5"><a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-left"></i> <span>Salir</span></a></div>
-    </div>
+<?php include '../includes/sidebar_alumno.php'; ?>
 
     <div class="main-content">
         
         <div class="course-hero mb-4 d-flex justify-content-between align-items-end p-4 rounded-4 text-white shadow-sm">
-            <div>
+            <div style="position: relative; z-index: 2;">
                 <span class="badge bg-white text-primary mb-2 text-uppercase px-3 py-2 fw-bold shadow-sm"><?php echo $info['curso']; ?></span>
                 <h1 class="display-5 fw-bold mb-1"><?php echo $info['materia']; ?></h1>
                 <p class="mb-0 opacity-75"><i class="bi bi-person-video3"></i> Dictado por <?php echo $info['profe']; ?></p>
             </div>
-            <div>
+            <div style="position: relative; z-index: 2;">
                 <a href="dashboard.php" class="btn btn-outline-light rounded-pill px-4 fw-bold">
                     <i class="bi bi-arrow-left"></i> Volver
                 </a>
@@ -156,11 +168,8 @@ $actividades = $stmtAct->fetchAll();
                                 <?php endif; ?>
 
                                 <?php if($act['tipo'] == 'tarea'): ?>
-                                    
                                     <hr class="border-secondary opacity-10">
-                                    
                                     <?php 
-                                        // Verificar si ya entregó
                                         $sqlCheck = "SELECT * FROM entregas WHERE actividad_id = ? AND alumno_id = ?";
                                         $stmtCheck = $pdo->prepare($sqlCheck);
                                         $stmtCheck->execute([$act['id'], $alumno_id]);
@@ -176,41 +185,29 @@ $actividades = $stmtAct->fetchAll();
                                             <?php if($entrega['nota']): ?>
                                                 <div class="mt-2 pt-2 border-top border-success-subtle">
                                                     <span class="badge bg-success fs-6">Nota: <?php echo $entrega['nota']; ?></span>
-                                                    <?php if($entrega['comentario_profesor']): ?>
-                                                        <span class="ms-2 text-success small fst-italic">"<?php echo $entrega['comentario_profesor']; ?>"</span>
-                                                    <?php endif; ?>
                                                 </div>
                                             <?php else: ?>
                                                 <div class="mt-1 small text-success opacity-75">Esperando calificación...</div>
                                             <?php endif; ?>
                                         </div>
-
                                     <?php else: ?>
                                         <div class="upload-zone p-3">
                                             <p class="mb-2 fw-bold text-danger small"><i class="bi bi-exclamation-circle"></i> Pendiente de entrega</p>
-                                            
                                             <form method="POST" enctype="multipart/form-data" class="d-flex gap-2">
                                                 <input type="hidden" name="actividad_id" value="<?php echo $act['id']; ?>">
                                                 <input type="file" name="entrega_archivo" class="form-control form-control-sm" required>
-                                                <button type="submit" class="btn btn-danger btn-sm fw-bold">
-                                                    <i class="bi bi-send"></i> Enviar
-                                                </button>
+                                                <button type="submit" class="btn btn-danger btn-sm fw-bold"><i class="bi bi-send"></i> Enviar</button>
                                             </form>
-
                                             <?php if($act['fecha_limite']): ?>
-                                                <small class="d-block mt-2 text-muted">
-                                                    Vence el: <strong><?php echo date("d/m/Y H:i", strtotime($act['fecha_limite'])); ?></strong>
-                                                </small>
+                                                <small class="d-block mt-2 text-muted">Vence: <strong><?php echo date("d/m/Y H:i", strtotime($act['fecha_limite'])); ?></strong></small>
                                             <?php endif; ?>
                                         </div>
                                     <?php endif; ?>
-
                                 <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
-
             </div>
 
             <div class="col-lg-4">
@@ -223,7 +220,10 @@ $actividades = $stmtAct->fetchAll();
                         </div>
                         <h5 class="fw-bold"><?php echo $info['profe']; ?></h5>
                         <p class="text-muted small"><?php echo $info['email_profe']; ?></p>
-                        <button class="btn btn-outline-primary btn-sm rounded-pill w-100" onclick="alert('Función Mensajería próximamente')">
+                        
+                        <button class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-bold" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modalMsgProfe">
                             <i class="bi bi-envelope"></i> Enviar Mensaje
                         </button>
                     </div>
@@ -234,27 +234,46 @@ $actividades = $stmtAct->fetchAll();
                         <h6 class="opacity-75 mb-3">Resumen del Curso</h6>
                         <div class="d-flex justify-content-between mb-2">
                             <span>Evaluaciones</span>
-                            <span class="fw-bold">
-                                <?php 
-                                // Contador rápido en PHP (filtro de arrays)
-                                echo count(array_filter($actividades, function($v){ return $v['tipo'] == 'tarea'; }));
-                                ?>
-                            </span>
+                            <span class="fw-bold"><?php echo count(array_filter($actividades, function($v){ return $v['tipo'] == 'tarea'; })); ?></span>
                         </div>
                         <div class="d-flex justify-content-between">
                             <span>Materiales</span>
-                            <span class="fw-bold">
-                                <?php 
-                                echo count(array_filter($actividades, function($v){ return $v['tipo'] == 'material'; }));
-                                ?>
-                            </span>
+                            <span class="fw-bold"><?php echo count(array_filter($actividades, function($v){ return $v['tipo'] == 'material'; })); ?></span>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
+
+    <div class="modal fade" id="modalMsgProfe" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">Contactar Profesor</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3">
+                        Enviando mensaje a: <strong><?php echo $info['profe']; ?></strong><br>
+                        Asunto: <em>Consulta sobre <?php echo $info['materia']; ?></em>
+                    </p>
+                    <form method="POST">
+                        <input type="hidden" name="profe_id" value="<?php echo $info['id_profe']; ?>">
+                        <input type="hidden" name="materia_nombre" value="<?php echo $info['materia']; ?>">
+                        <div class="mb-3">
+                            <textarea name="mensaje_texto" class="form-control" rows="4" placeholder="Escribe tu duda aquí..." required></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" name="msg_rapido" class="btn btn-primary fw-bold">ENVIAR CONSULTA</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
