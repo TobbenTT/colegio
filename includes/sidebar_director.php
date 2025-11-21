@@ -13,6 +13,9 @@
     <a href="reportes.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'reportes.php') ? 'active' : ''; ?>">
         <i class="bi bi-file-earmark-text-fill"></i> <span>Reportes</span>
     </a>
+    <a href="riesgo_escolar.php" class="text-warning fw-bold">
+        <i class="bi bi-heart-pulse-fill"></i> <span>IA Riesgo Escolar</span>
+    </a>
 
     <a href="../notificaciones.php" class="d-flex justify-content-between align-items-center pe-3">
         <span><i class="bi bi-bell-fill"></i> Avisos</span>
