@@ -32,7 +32,7 @@ if (isset($_GET['toggle_id'])) {
 
 // 3. OBTENER HORARIO DEL PROFESOR
 // Traemos día, hora, curso, materia y ESTADO
-$sql = "SELECT h.*, c.nombre as curso, a.nombre as materia 
+$sql = "SELECT h.dia, h.*, c.nombre as curso, a.nombre as materia 
         FROM horarios h
         JOIN programacion_academica pa ON h.programacion_id = pa.id
         JOIN cursos c ON pa.curso_id = c.id
