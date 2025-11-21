@@ -21,7 +21,9 @@
     <a href="riesgo_escolar.php" class="text-warning fw-bold">
         <i class="bi bi-heart-pulse-fill"></i> <span>IA Riesgo Escolar</span>
     </a>
-
+    <a href="zona_descargas.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'zona_descargas.php') ? 'active' : ''; ?>">
+        <i class="bi bi-cloud-download-fill"></i> <span>Exportar Datos</span>
+    </a>
     <?php 
         $hay_avisos = (isset($notificaciones_pendientes) && $notificaciones_pendientes > 0);
         $clase_link = $hay_avisos ? 'text-warning fw-bold' : ''; 

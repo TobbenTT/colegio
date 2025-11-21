@@ -23,7 +23,9 @@
     <a href="perfil.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'perfil.php') ? 'active' : ''; ?>">
         <i class="bi bi-person-circle"></i> <span>Mi Perfil</span>
     </a>
-
+    <a href="resumen_academico.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'resumen_academico.php') ? 'active' : ''; ?>">
+        <i class="bi bi-bar-chart-steps"></i> <span>Resumen Académico</span>
+    </a>
     <?php 
         $hay_avisos = (isset($notificaciones_pendientes) && $notificaciones_pendientes > 0);
         $clase_link = $hay_avisos ? 'text-warning fw-bold' : ''; 
