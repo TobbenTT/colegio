@@ -288,3 +288,79 @@ body {
     border-color: var(--accent-color);
     background-color: #f0fdfa;
 }
+
+/* --- RESPONSIVE DESIGN (Móvil) --- */
+
+/* Botón de menú (Hamburguesa) - Oculto en PC, Visible en Móvil */
+.mobile-nav-toggle {
+    display: none; /* En PC no se ve */
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 9999;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Reglas para pantallas menores a 768px (Celulares y Tablets verticales) */
+@media (max-width: 768px) {
+    
+    /* 1. El Sidebar se oculta a la izquierda */
+    .sidebar {
+        left: -100%; /* Lo sacamos de la pantalla */
+        width: 280px; /* Un poco más ancho para dedos */
+        transition: 0.3s; /* Animación suave */
+        z-index: 9998; /* Por encima de todo */
+    }
+
+    /* Clase para mostrar el Sidebar cuando se active */
+    .sidebar.active {
+        left: 0;
+        box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+    }
+
+    /* 2. El contenido principal ocupa todo el ancho */
+    .main-content {
+        margin-left: 0;
+        padding: 15px; /* Menos relleno en móvil */
+    }
+
+    /* 3. Mostrar el botón de menú */
+    .mobile-nav-toggle {
+        display: flex;
+    }
+
+    /* 4. Ajustar tarjetas de estadísticas para que no se vean gigantes */
+    .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    /* 5. Tablas con scroll horizontal */
+    .table-responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+    }
+    
+    /* 6. Ajustar Hero Banner */
+    .course-hero {
+        padding: 1.5rem;
+        text-align: center;
+    }
+    .course-hero .d-flex {
+        flex-direction: column;
+    }
+    .course-hero .text-end {
+        text-align: center !important;
+        margin-top: 15px;
+    }
+}

@@ -40,8 +40,23 @@ $info = $pdo->prepare($sqlCurso); $info->execute([$prog_id]); $info = $info->fet
 $sqlAlumnos = "SELECT u.id, u.nombre FROM matriculas m JOIN usuarios u ON m.alumno_id = u.id WHERE m.curso_id = ? ORDER BY u.nombre";
 $alumnos = $pdo->prepare($sqlAlumnos); $alumnos->execute([$info['curso_id']]); $alumnos = $alumnos->fetchAll();
 
-$sqlHist = "SELECT an.*, u.nombre as alumno, u.foto FROM anotaciones an JOIN usuarios u ON an.alumno_id = u.id WHERE an.autor_id = ? ORDER BY an.fecha DESC";
-$historial = $pdo->prepare($sqlHist); $historial->execute([$profesor_id]); $historial = $historial->fetchAll();
+// 3. OBTENER HISTORIAL (CON FILTRO)
+$filtro_alumno_id = $_GET['filtro_alumno_id'] ?? '';
+
+$sqlHist = "SELECT an.*, u.nombre as alumno, u.foto 
+            FROM anotaciones an 
+            JOIN usuarios u ON an.alumno_id = u.id 
+            JOIN matriculas m ON u.id = m.alumno_id
+            WHERE an.autor_id = :profesor_id AND m.curso_id = :curso_id";
+
+$params = ['profesor_id' => $profesor_id, 'curso_id' => $info['curso_id']];
+
+if (!empty($filtro_alumno_id)) {
+    $sqlHist .= " AND an.alumno_id = :alumno_id";
+    $params['alumno_id'] = $filtro_alumno_id;
+}
+$sqlHist .= " ORDER BY an.fecha DESC";
+$historial = $pdo->prepare($sqlHist); $historial->execute($params); $historial = $historial->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -107,6 +122,26 @@ $historial = $pdo->prepare($sqlHist); $historial->execute([$profesor_id]); $hist
             </div>
 
             <div class="col-lg-8">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body bg-light rounded-3">
+                        <form method="GET" class="d-flex align-items-center gap-3">
+                            <input type="hidden" name="id" value="<?php echo $prog_id; ?>">
+                            <label class="fw-bold text-secondary"><i class="bi bi-funnel"></i> Filtrar por Alumno:</label>
+                            <select name="filtro_alumno_id" class="form-select" onchange="this.form.submit()">
+                                <option value="">Ver todos los del curso</option>
+                                <?php foreach($alumnos as $alu): ?>
+                                    <option value="<?php echo $alu['id']; ?>" <?php echo ($filtro_alumno_id == $alu['id']) ? 'selected' : ''; ?>>
+                                        <?php echo $alu['nombre']; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <?php if($filtro_alumno_id): ?>
+                                <a href="anotaciones.php?id=<?php echo $prog_id; ?>" class="btn btn-outline-danger">Limpiar</a>
+                            <?php endif; ?>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="card shadow-sm border-0">
                     <div class="card-body p-0">
                         <?php if(count($historial) == 0): ?>

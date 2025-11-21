@@ -70,17 +70,19 @@ $promedio = ($cant_notas > 0) ? number_format($suma_notas / $cant_notas, 1) : '-
 <?php if(count($notas) == 0): ?>
     <p class="text-muted small text-center">No hay notas registradas aún.</p>
 <?php else: ?>
-    <table class="table table-sm table-striped">
-        <thead><tr><th>Evaluación</th><th class="text-end">Nota</th></tr></thead>
-        <tbody>
-            <?php foreach($notas as $nota): ?>
-                <tr>
-                    <td><?php echo $nota['titulo']; ?></td>
-                    <td class="text-end fw-bold">
-                        <?php echo ($nota['nota']) ? $nota['nota'] : '<span class="text-muted small">Pendiente</span>'; ?>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-sm table-striped">
+            <thead><tr><th>Evaluación</th><th class="text-end">Nota</th></tr></thead>
+            <tbody>
+                <?php foreach($notas as $nota): ?>
+                    <tr>
+                        <td><?php echo $nota['titulo']; ?></td>
+                        <td class="text-end fw-bold">
+                            <?php echo ($nota['nota']) ? $nota['nota'] : '<span class="text-muted small">Pendiente</span>'; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 <?php endif; ?>

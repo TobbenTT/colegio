@@ -91,34 +91,36 @@ $historial = $stmtDet->fetchAll();
                         <h5 class="mb-0 fw-bold">Historial de Clases</h5>
                     </div>
                     <div class="card-body p-0">
-                        <table class="table table-modern table-hover mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="ps-4">Fecha</th>
-                                    <th>Materia</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach($historial as $fila): ?>
+                        <div class="table-responsive">
+                            <table class="table table-modern table-hover mb-0">
+                                <thead class="bg-light">
                                     <tr>
-                                        <td class="ps-4 fw-bold text-secondary">
-                                            <?php echo date("d/m", strtotime($fila['fecha'])); ?>
-                                        </td>
-                                        <td><?php echo $fila['materia']; ?></td>
-                                        <td>
-                                            <?php if($fila['estado'] == 'presente'): ?>
-                                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">Presente</span>
-                                            <?php elseif($fila['estado'] == 'atrasado'): ?>
-                                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3">Atrasado</span>
-                                            <?php else: ?>
-                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3">Ausente</span>
-                                            <?php endif; ?>
-                                        </td>
+                                        <th class="ps-4">Fecha</th>
+                                        <th>Materia</th>
+                                        <th>Estado</th>
                                     </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <?php foreach($historial as $fila): ?>
+                                        <tr>
+                                            <td class="ps-4 fw-bold text-secondary">
+                                                <?php echo date("d/m", strtotime($fila['fecha'])); ?>
+                                            </td>
+                                            <td><?php echo $fila['materia']; ?></td>
+                                            <td>
+                                                <?php if($fila['estado'] == 'presente'): ?>
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">Presente</span>
+                                                <?php elseif($fila['estado'] == 'atrasado'): ?>
+                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3">Atrasado</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3">Ausente</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
