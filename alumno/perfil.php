@@ -176,6 +176,19 @@ if ($foto_db && file_exists("../assets/uploads/perfiles/" . $foto_db)) {
                     </div>
                 </div>
             </div>
+            <div class="card shadow-sm border-0 mt-4 text-center">
+                <div class="card-header bg-dark text-white">Mi Credencial de Acceso</div>
+                <div class="card-body">
+                    <p class="text-muted small">Muestra este código al profesor para la asistencia.</p>
+                    
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=<?php echo $_SESSION['user_id']; ?>" 
+                        alt="QR Alumno" 
+                        class="border p-2 rounded">
+                        
+                    <h5 class="mt-2 fw-bold"><?php echo $_SESSION['nombre']; ?></h5>
+                    <span class="badge bg-primary">Alumno Regular</span>
+                </div>
+            </div>
 
         </div>
     </div>
