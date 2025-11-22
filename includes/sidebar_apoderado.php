@@ -1,5 +1,4 @@
 <div class="sidebar" id="sidebarMenu">
-    
     <div class="d-flex justify-content-end d-md-none p-2">
         <button class="btn text-white fs-4" onclick="toggleMenu()"><i class="bi bi-x-lg"></i></button>
     </div>
@@ -8,6 +7,9 @@
     
     <a href="dashboard.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'dashboard.php') ? 'active' : ''; ?>">
         <i class="bi bi-grid-fill"></i> <span>Mis Pupilos</span>
+    </a>
+    <a href="ver_calendario.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'ver_calendario.php') ? 'active' : ''; ?>">
+        <i class="bi bi-calendar-event"></i> <span>Calendario Escolar</span>
     </a>
     <a href="perfil.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'perfil.php') ? 'active' : ''; ?>">
         <i class="bi bi-person-circle"></i> <span>Mi Perfil</span>
@@ -32,8 +34,4 @@
 
 <button class="mobile-nav-toggle d-md-none" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
 
-<script>
-    function toggleMenu() {
-        document.getElementById('sidebarMenu').classList.toggle('active');
-    }
-</script>
+<script>function toggleMenu() { document.getElementById('sidebarMenu').classList.toggle('active'); }</script>

@@ -91,11 +91,8 @@ if (count($data_cruda) == 0) {
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo mb-4"><i class="bi bi-robot"></i> IA Director</div>
-        <a href="dashboard.php"><i class="bi bi-grid-fill"></i> <span>Volver al Panel</span></a>
-        <a href="riesgo_escolar.php" class="active"><i class="bi bi-heart-pulse-fill"></i> <span>Riesgo Escolar</span></a>
-    </div>
+    <?php include '../includes/sidebar_director.php'; ?>
+
 
     <div class="main-content">
         

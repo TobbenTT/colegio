@@ -1,9 +1,6 @@
 <div class="sidebar" id="sidebarMenu">
-    
     <div class="d-flex justify-content-end d-md-none p-2">
-        <button class="btn text-white fs-4" onclick="toggleMenu()">
-            <i class="bi bi-x-lg"></i>
-        </button>
+        <button class="btn text-white fs-4" onclick="toggleMenu()"><i class="bi bi-x-lg"></i></button>
     </div>
 
     <div class="logo mb-4"><i class="bi bi-backpack2-fill"></i> Mi Colegio</div>
@@ -14,30 +11,34 @@
     <a href="horario.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'horario.php') ? 'active' : ''; ?>">
         <i class="bi bi-calendar-week"></i> <span>Horario</span>
     </a>
+    <a href="resumen_academico.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'resumen_academico.php') ? 'active' : ''; ?>">
+        <i class="bi bi-bar-chart-steps"></i> <span>Notas y Promedios</span>
+    </a>
+    <a href="ver_calendario.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'ver_calendario.php') ? 'active' : ''; ?>">
+        <i class="bi bi-calendar-event"></i> <span>Calendario</span>
+    </a>
     <a href="asistencia.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'asistencia.php') ? 'active' : ''; ?>">
         <i class="bi bi-clipboard-check"></i> <span>Asistencia</span>
     </a>
     <a href="mis_anotaciones.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'mis_anotaciones.php') ? 'active' : ''; ?>">
         <i class="bi bi-exclamation-triangle"></i> <span>Hoja de Vida</span>
     </a>
+    <a href="mensajes.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'mensajes.php') ? 'active' : ''; ?>">
+        <i class="bi bi-chat-dots"></i> <span>Mensajes</span>
+    </a>
     <a href="perfil.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'perfil.php') ? 'active' : ''; ?>">
         <i class="bi bi-person-circle"></i> <span>Mi Perfil</span>
     </a>
-    <a href="resumen_academico.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'resumen_academico.php') ? 'active' : ''; ?>">
-        <i class="bi bi-bar-chart-steps"></i> <span>Resumen Académico</span>
-    </a>
+
     <?php 
         $hay_avisos = (isset($notificaciones_pendientes) && $notificaciones_pendientes > 0);
         $clase_link = $hay_avisos ? 'text-warning fw-bold' : ''; 
         $icono = $hay_avisos ? 'bi-bell-fill animate__animated animate__swing animate__infinite' : 'bi-bell'; 
     ?>
-
     <a href="../notificaciones.php" class="d-flex justify-content-between align-items-center pe-3 <?php echo $clase_link; ?>">
         <span><i class="bi <?php echo $icono; ?>"></i> Avisos</span>
         <?php if($hay_avisos): ?>
-            <span class="badge bg-danger rounded-pill shadow-sm border border-light">
-                <?php echo $notificaciones_pendientes; ?>
-            </span>
+            <span class="badge bg-danger rounded-pill shadow-sm border border-light"><?php echo $notificaciones_pendientes; ?></span>
         <?php endif; ?>
     </a>
     
@@ -46,12 +47,6 @@
     </div>
 </div>
 
-<button class="mobile-nav-toggle d-md-none" onclick="toggleMenu()">
-    <i class="bi bi-list"></i>
-</button>
+<button class="mobile-nav-toggle d-md-none" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
 
-<script>
-    function toggleMenu() {
-        document.getElementById('sidebarMenu').classList.toggle('active');
-    }
-</script>
+<script>function toggleMenu() { document.getElementById('sidebarMenu').classList.toggle('active'); }</script>

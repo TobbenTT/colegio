@@ -110,16 +110,7 @@ $asignaturas = $pdo->query("SELECT * FROM asignaturas ORDER BY nombre")->fetchAl
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo mb-4"><i class="bi bi-shield-lock-fill"></i> AdminPanel</div>
-        <a href="dashboard.php"><i class="bi bi-speedometer2"></i> <span>Inicio</span></a>
-        <hr class="text-secondary mx-3 my-2">
-        <a href="usuarios.php"><i class="bi bi-people-fill"></i> <span>Usuarios</span></a>
-        <a href="matriculas.php"><i class="bi bi-card-checklist"></i> <span>Matrículas</span></a>
-        <a href="cursos.php" class="active"><i class="bi bi-building"></i> <span>Cursos y Materias</span></a>
-        <a href="asignacion.php"><i class="bi bi-diagram-3-fill"></i> <span>Carga Académica</span></a>
-        <div class="mt-5"><a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-left"></i> <span>Salir</span></a></div>
-    </div>
+<?php include '../includes/sidebar_admin.php'; ?>
 
     <div class="main-content">
         

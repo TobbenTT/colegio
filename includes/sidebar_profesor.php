@@ -1,5 +1,4 @@
 <div class="sidebar" id="sidebarMenu">
-    
     <div class="d-flex justify-content-end d-md-none p-2">
         <button class="btn text-white fs-4" onclick="toggleMenu()"><i class="bi bi-x-lg"></i></button>
     </div>
@@ -12,15 +11,19 @@
     <a href="mensajes.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'mensajes.php') ? 'active' : ''; ?>">
         <i class="bi bi-chat-dots"></i> <span>Mensajería</span>
     </a>
-    <a href="perfil.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'perfil.php') ? 'active' : ''; ?>">
-        <i class="bi bi-person-circle"></i> <span>Mi Perfil</span>
-    </a>
-    <a href="escaner_qr.php" class="text-warning fw-bold">
-        <i class="bi bi-qr-code-scan"></i> <span>Escanear QR</span>
-    </a>
     <a href="mi_horario.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'mi_horario.php') ? 'active' : ''; ?>">
         <i class="bi bi-calendar-range"></i> <span>Gestionar Horario</span>
     </a>
+    <a href="perfil.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'perfil.php') ? 'active' : ''; ?>">
+        <i class="bi bi-person-circle"></i> <span>Mi Perfil</span>
+    </a>
+    
+    <hr class="text-secondary mx-3 my-2">
+    
+    <a href="escaner_qr.php" class="text-warning fw-bold">
+        <i class="bi bi-qr-code-scan"></i> <span>Escanear QR</span>
+    </a>
+
     <?php 
         $hay_avisos = (isset($notificaciones_pendientes) && $notificaciones_pendientes > 0);
         $clase_link = $hay_avisos ? 'text-warning fw-bold' : ''; 
@@ -40,8 +43,4 @@
 
 <button class="mobile-nav-toggle d-md-none" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
 
-<script>
-    function toggleMenu() {
-        document.getElementById('sidebarMenu').classList.toggle('active');
-    }
-</script>
+<script>function toggleMenu() { document.getElementById('sidebarMenu').classList.toggle('active'); }</script>

@@ -1,6 +1,8 @@
 <?php
 session_start();
 require '../config/db.php';
+require '../includes/funciones.php'; // <--- IMPORTANTE
+
 if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'apoderado') { header("Location: ../login.php"); exit; }
 
 $hijo_id = $_GET['id'];
@@ -37,7 +39,10 @@ $anotaciones = $notas_vida->fetchAll();
 // 5. NOTAS Y PROMEDIOS
 $promedios = $pdo->prepare("SELECT AVG(nota) as promedio FROM entregas WHERE alumno_id = ? AND nota > 0");
 $promedios->execute([$hijo_id]);
-$prom_general = number_format($promedios->fetchColumn(), 1);
+$prom_general = number_format($promedios->fetchColumn() ?: 0, 1);
+
+// Notificaciones Sidebar
+$notificaciones_pendientes = contarNotificacionesNoLeidas($pdo, $_SESSION['user_id']);
 ?>
 
 <!DOCTYPE html>
@@ -48,14 +53,11 @@ $prom_general = number_format($promedios->fetchColumn(), 1);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo mb-4"><i class="bi bi-people-fill"></i> Apoderados</div>
-        <a href="dashboard.php" class="active"><i class="bi bi-grid-fill"></i> <span>Mis Pupilos</span></a>
-        <div class="mt-5"><a href="dashboard.php" class="text-light"><i class="bi bi-arrow-left"></i> Volver</a></div>
-    </div>
+    <?php include '../includes/sidebar_apoderado.php'; ?>
 
     <div class="main-content">
         
@@ -139,5 +141,6 @@ $prom_general = number_format($promedios->fetchColumn(), 1);
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

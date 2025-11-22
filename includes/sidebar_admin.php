@@ -1,5 +1,4 @@
 <div class="sidebar" id="sidebarMenu">
-    
     <div class="d-flex justify-content-end d-md-none p-2">
         <button class="btn text-white fs-4" onclick="toggleMenu()"><i class="bi bi-x-lg"></i></button>
     </div>
@@ -18,11 +17,17 @@
     <a href="matriculas.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'matriculas.php') ? 'active' : ''; ?>">
         <i class="bi bi-card-checklist"></i> <span>Matrículas</span>
     </a>
+    <a href="familia.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'familia.php') ? 'active' : ''; ?>">
+        <i class="bi bi-people"></i> <span>Familias</span>
+    </a>
     <a href="cursos.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'cursos.php') ? 'active' : ''; ?>">
         <i class="bi bi-building"></i> <span>Cursos y Materias</span>
     </a>
     <a href="asignacion.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'asignacion.php') ? 'active' : ''; ?>">
         <i class="bi bi-diagram-3-fill"></i> <span>Carga Académica</span>
+    </a>
+    <a href="calendario_gestion.php" class="<?php echo (basename($_SERVER['PHP_SELF']) == 'calendario_gestion.php') ? 'active' : ''; ?>">
+        <i class="bi bi-calendar-check"></i> <span>Gestión Calendario</span>
     </a>
 
     <?php 
@@ -44,8 +49,4 @@
 
 <button class="mobile-nav-toggle d-md-none" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
 
-<script>
-    function toggleMenu() {
-        document.getElementById('sidebarMenu').classList.toggle('active');
-    }
-</script>
+<script>function toggleMenu() { document.getElementById('sidebarMenu').classList.toggle('active'); }</script>

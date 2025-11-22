@@ -19,14 +19,8 @@ $cursos = $pdo->query("SELECT * FROM cursos ORDER BY nombre")->fetchAll();
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo mb-4"><i class="bi bi-bank2"></i> Dirección</div>
-        <a href="dashboard.php"><i class="bi bi-grid-fill"></i> <span>Menú Principal</span></a>
-        <a href="resumen.php"><i class="bi bi-bar-chart-line-fill"></i> <span>Estadísticas</span></a>
-        <a href="reportes.php"><i class="bi bi-file-earmark-text-fill"></i> <span>Reportes</span></a>
-        <a href="zona_descargas.php" class="active"><i class="bi bi-cloud-download-fill"></i> <span>Exportar Datos</span></a>
-        <div class="mt-5"><a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-left"></i> <span>Salir</span></a></div>
-    </div>
+    <?php include '../includes/sidebar_director.php'; ?>
+
 
     <div class="main-content">
         

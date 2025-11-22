@@ -43,15 +43,7 @@ $historial = $stmtDet->fetchAll();
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo mb-4"><i class="bi bi-backpack2-fill"></i> Mi Colegio</div>
-        <a href="dashboard.php"><i class="bi bi-grid-fill"></i> <span>Mis Clases</span></a>
-        <a href="horario.php"><i class="bi bi-calendar-week"></i> <span>Horario</span></a>
-        <a href="asistencia.php" class="active"><i class="bi bi-clipboard-check"></i> <span>Asistencia</span></a>
-        <a href="mis_anotaciones.php"><i class="bi bi-exclamation-triangle"></i> <span>Hoja de Vida</span></a>
-        <a href="perfil.php"><i class="bi bi-person-circle"></i> <span>Mi Perfil</span></a>
-        <div class="mt-5"><a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-left"></i> <span>Salir</span></a></div>
-    </div>
+<?php include '../includes/sidebar_alumno.php'; ?>
 
     <div class="main-content">
         <h2 class="fw-bold mb-4">📊 Reporte de Asistencia</h2>

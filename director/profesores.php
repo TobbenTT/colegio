@@ -32,12 +32,7 @@ function obtenerClases($pdo, $profe_id) {
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo mb-4"><i class="bi bi-bank2"></i> Dirección</div>
-        <a href="dashboard.php"><i class="bi bi-grid-fill"></i> <span>Menú Principal</span></a>
-        <a href="resumen.php"><i class="bi bi-bar-chart-line-fill"></i> <span>Estadísticas</span></a>
-        <div class="mt-5"><a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-left"></i> <span>Salir</span></a></div>
-    </div>
+    <?php include '../includes/sidebar_director.php'; ?>
 
     <div class="main-content">
         

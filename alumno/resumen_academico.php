@@ -59,11 +59,17 @@ $materias = $stmtMat->fetchAll();
 </head>
 <body>
 
-    <?php include '../includes/sidebar_alumno.php'; ?>
+<?php include '../includes/sidebar_alumno.php'; ?>
 
     <div class="main-content">
         
-        <h3 class="fw-bold mb-4"><i class="bi bi-mortarboard-fill"></i> Situación Académica</h3>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold mb-0"><i class="bi bi-mortarboard-fill"></i> Situación Académica</h3>
+            
+            <a href="certificado.php" target="ventana_certificado" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
+                <i class="bi bi-file-earmark-pdf-fill"></i> Certificado de Notas
+            </a>
+        </div>
 
         <div class="accordion shadow-sm" id="accordionAcademic">
             

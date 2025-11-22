@@ -1,7 +1,7 @@
 <?php
 session_start();
 require '../config/db.php';
-require '../includes/funciones.php';
+
 if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'director') { header("Location: ../login.php"); exit; }
 
 // VARIABLES DE CONTROL DE VISTA
@@ -14,7 +14,6 @@ if ($alumno_id) {
 } elseif ($curso_id) {
     $vista = 'lista_alumnos';
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -28,28 +27,59 @@ if ($alumno_id) {
     
     <style>
         @media print {
-            .sidebar, .no-print, .btn, header { display: none !important; }
-            .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
-            .card { border: none !important; shadow: none !important; }
-            body { background-color: white; -webkit-print-color-adjust: exact; }
+            /* 1. Ocultar elementos de navegación y botones */
+            .sidebar, 
+            .no-print, 
+            .btn, 
+            header, 
+            .mobile-nav-toggle { /* <--- ESTO OCULTA EL BOTÓN FLOTANTE */
+                display: none !important;
+            }
+
+            /* 2. Resetear el contenedor principal */
+            .main-content { 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                width: 100% !important; 
+            }
+
+            /* 3. Limpiar la tarjeta para que parezca una hoja */
+            .card { 
+                border: none !important; 
+                box-shadow: none !important; 
+                padding: 0 !important; /* Quitamos padding del card para controlarlo en @page */
+            }
+
+            body { 
+                background-color: white; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact;
+            }
+
+            /* 4. TRUCO PARA QUITAR "LOCALHOST" Y FECHA AUTOMÁTICA */
+            @page {
+                margin: 0; /* Esto elimina los encabezados y pies de página del navegador */
+                size: auto;
+            }
+
+            /* 5. Crear márgenes seguros para el contenido impreso */
+            #print-area {
+                margin: 1.5cm !important; /* Margen físico en la hoja */
+                padding: 0 !important;
+            }
         }
+
         .hover-card:hover { transform: translateY(-3px); cursor: pointer; border-color: var(--accent-color); }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo mb-4"><i class="bi bi-bank2"></i> Dirección</div>
-        <a href="dashboard.php"><i class="bi bi-grid-fill"></i> <span>Menú Principal</span></a>
-        <a href="reportes.php" class="active"><i class="bi bi-file-earmark-text-fill"></i> <span>Reportes</span></a>
-        <div class="mt-5"><a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-left"></i> <span>Salir</span></a></div>
-    </div>
+    <?php include '../includes/sidebar_director.php'; ?>
 
     <div class="main-content">
         
         <?php if ($vista == 'cursos'): ?>
             <?php 
-                // Obtener cursos y contar alumnos
                 $sql = "SELECT c.*, COUNT(m.id) as total_alumnos 
                         FROM cursos c 
                         LEFT JOIN matriculas m ON c.id = m.curso_id 
@@ -57,12 +87,12 @@ if ($alumno_id) {
                 $cursos = $pdo->query($sql)->fetchAll();
             ?>
             
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 no-print">
                 <h3 class="fw-bold"><i class="bi bi-building"></i> Seleccionar Curso</h3>
                 <a href="dashboard.php" class="btn btn-outline-secondary rounded-pill">Volver al Menú</a>
             </div>
 
-            <div class="row">
+            <div class="row no-print">
                 <?php foreach($cursos as $c): ?>
                     <div class="col-md-4 mb-4">
                         <a href="reportes.php?curso_id=<?php echo $c['id']; ?>" class="text-decoration-none text-dark">
@@ -83,15 +113,12 @@ if ($alumno_id) {
                 <?php endforeach; ?>
             </div>
 
-        
         <?php elseif ($vista == 'lista_alumnos'): ?>
             <?php 
-                // Obtener nombre del curso
                 $stmtC = $pdo->prepare("SELECT nombre FROM cursos WHERE id = ?");
                 $stmtC->execute([$curso_id]);
                 $nombre_curso = $stmtC->fetchColumn();
 
-                // Obtener alumnos
                 $sql = "SELECT u.id, u.nombre, u.email, u.foto 
                         FROM matriculas m 
                         JOIN usuarios u ON m.alumno_id = u.id 
@@ -102,7 +129,7 @@ if ($alumno_id) {
                 $alumnos = $stmt->fetchAll();
             ?>
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 no-print">
                 <div>
                     <h3 class="fw-bold mb-0">Curso: <?php echo $nombre_curso; ?></h3>
                     <p class="text-muted">Seleccione un estudiante para generar su reporte.</p>
@@ -110,7 +137,7 @@ if ($alumno_id) {
                 <a href="reportes.php" class="btn btn-outline-secondary rounded-pill"><i class="bi bi-arrow-left"></i> Volver a Cursos</a>
             </div>
 
-            <div class="card shadow-sm border-0">
+            <div class="card shadow-sm border-0 no-print">
                 <div class="card-body p-0">
                     <table class="table table-hover mb-0 align-middle">
                         <thead class="bg-light">
@@ -143,51 +170,24 @@ if ($alumno_id) {
                 </div>
             </div>
 
-
         <?php elseif ($vista == 'reporte_alumno'): ?>
             <?php 
-                // 1. Datos Básicos
-                $sqlInfo = "SELECT u.nombre, u.email, u.foto, c.nombre as curso 
-                            FROM usuarios u 
-                            JOIN matriculas m ON u.id = m.alumno_id 
-                            JOIN cursos c ON m.curso_id = c.id 
-                            WHERE u.id = ?";
-                $stmt = $pdo->prepare($sqlInfo);
-                $stmt->execute([$alumno_id]);
-                $alumno = $stmt->fetch();
+                // Consultas de datos (Igual que antes)
+                $sqlInfo = "SELECT u.nombre, u.email, u.foto, c.nombre as curso FROM usuarios u JOIN matriculas m ON u.id = m.alumno_id JOIN cursos c ON m.curso_id = c.id WHERE u.id = ?";
+                $stmt = $pdo->prepare($sqlInfo); $stmt->execute([$alumno_id]); $alumno = $stmt->fetch();
 
-                // 2. Asistencia
-                $sqlAsis = "SELECT COUNT(*) as total, SUM(CASE WHEN estado='presente' THEN 1 ELSE 0 END) as presentes 
-                            FROM asistencia WHERE alumno_id = ?";
-                $stmt = $pdo->prepare($sqlAsis);
-                $stmt->execute([$alumno_id]);
-                $asis = $stmt->fetch();
+                $sqlAsis = "SELECT COUNT(*) as total, SUM(CASE WHEN estado='presente' THEN 1 ELSE 0 END) as presentes FROM asistencia WHERE alumno_id = ?";
+                $stmt = $pdo->prepare($sqlAsis); $stmt->execute([$alumno_id]); $asis = $stmt->fetch();
                 $pct_asis = ($asis['total'] > 0) ? round(($asis['presentes']/$asis['total'])*100) : 100;
 
-                // 3. Promedio General
                 $sqlProm = "SELECT AVG(nota) FROM entregas WHERE alumno_id = ? AND nota > 0";
-                $stmt = $pdo->prepare($sqlProm);
-                $stmt->execute([$alumno_id]);
-                $promedio = number_format($stmt->fetchColumn() ?: 0, 1);
+                $stmt = $pdo->prepare($sqlProm); $stmt->execute([$alumno_id]); $promedio = number_format($stmt->fetchColumn() ?: 0, 1);
 
-                // 4. Notas por Asignatura (Detalle)
-                // Esta query busca todas las asignaturas que tiene el alumno y sus promedios individuales
-                $sqlNotas = "SELECT a.nombre as materia, AVG(e.nota) as promedio_materia
-                             FROM programacion_academica pa
-                             JOIN asignaturas a ON pa.asignatura_id = a.id
-                             JOIN actividades act ON pa.id = act.programacion_id
-                             LEFT JOIN entregas e ON act.id = e.actividad_id AND e.alumno_id = ?
-                             WHERE pa.curso_id = (SELECT curso_id FROM matriculas WHERE alumno_id = ?)
-                             GROUP BY a.id";
-                $stmt = $pdo->prepare($sqlNotas);
-                $stmt->execute([$alumno_id, $alumno_id]);
-                $notas_detalle = $stmt->fetchAll();
+                $sqlNotas = "SELECT a.nombre as materia, AVG(e.nota) as promedio_materia FROM programacion_academica pa JOIN asignaturas a ON pa.asignatura_id = a.id JOIN actividades act ON pa.id = act.programacion_id LEFT JOIN entregas e ON act.id = e.actividad_id AND e.alumno_id = ? WHERE pa.curso_id = (SELECT curso_id FROM matriculas WHERE alumno_id = ?) GROUP BY a.id";
+                $stmt = $pdo->prepare($sqlNotas); $stmt->execute([$alumno_id, $alumno_id]); $notas_detalle = $stmt->fetchAll();
 
-                // 5. Anotaciones
                 $sqlAnot = "SELECT tipo, detalle, fecha FROM anotaciones WHERE alumno_id = ? ORDER BY fecha DESC";
-                $stmt = $pdo->prepare($sqlAnot);
-                $stmt->execute([$alumno_id]);
-                $anotaciones = $stmt->fetchAll();
+                $stmt = $pdo->prepare($sqlAnot); $stmt->execute([$alumno_id]); $anotaciones = $stmt->fetchAll();
             ?>
 
             <div class="no-print mb-4 d-flex justify-content-between align-items-center">
@@ -296,5 +296,6 @@ if ($alumno_id) {
         <?php endif; ?>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

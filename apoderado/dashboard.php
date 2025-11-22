@@ -1,6 +1,7 @@
 <?php
 session_start();
 require '../config/db.php';
+require '../includes/funciones.php'; // <--- ESTO FALTABA
 
 // 1. Seguridad
 if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'apoderado') { header("Location: ../login.php"); exit; }
@@ -17,6 +18,9 @@ $sql = "SELECT u.id, u.nombre, u.foto, c.nombre as curso
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$apoderado_id]);
 $hijos = $stmt->fetchAll();
+
+// Notificaciones para el sidebar
+$notificaciones_pendientes = contarNotificacionesNoLeidas($pdo, $_SESSION['user_id']);
 ?>
 
 <!DOCTYPE html>
@@ -27,11 +31,11 @@ $hijos = $stmt->fetchAll();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 </head>
 <body>
 
-<?php include '../includes/sidebar_apoderado.php'; ?>
-
+    <?php include '../includes/sidebar_apoderado.php'; ?>
 
     <div class="main-content">
         
@@ -41,6 +45,8 @@ $hijos = $stmt->fetchAll();
                 <p class="text-muted">Selecciona un estudiante para ver su situación.</p>
             </div>
         </div>
+
+        <?php include '../includes/widget_anuncios.php'; ?>
 
         <div class="row">
             <?php if(count($hijos) == 0): ?>
@@ -60,7 +66,6 @@ $hijos = $stmt->fetchAll();
                                     $foto = $hijo['foto'] ? "../assets/uploads/perfiles/".$hijo['foto'] : "https://cdn-icons-png.flaticon.com/512/2995/2995620.png"; 
                                 ?>
                                 <img src="<?php echo $foto; ?>" class="rounded-circle mb-3 border border-4 border-white shadow" width="120" height="120" style="object-fit: cover;">
-                                <?php include '../includes/widget_anuncios.php'; ?>
                                 
                                 <h4 class="fw-bold text-dark mb-1"><?php echo $hijo['nombre']; ?></h4>
                                 <span class="badge bg-primary-subtle text-primary rounded-pill px-3 mb-4">
@@ -82,5 +87,6 @@ $hijos = $stmt->fetchAll();
 
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
