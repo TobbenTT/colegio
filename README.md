@@ -60,11 +60,11 @@ El sistema está construido con **PHP Nativo (Vanilla)** utilizando el patrón M
 
 | Dashboard Alumno | Dashboard Director |
 |:---:|:---:|
-| ![Alumno](https://via.placeholder.com/400x200?text=Pon+Tu+Imagen+Aqui) | ![Director](https://via.placeholder.com/400x200?text=Pon+Tu+Imagen+Aqui) |
+| ![Alumno] | ![Director] |
 
 | Escáner QR | IA de Riesgo |
 |:---:|:---:|
-| ![QR](https://via.placeholder.com/400x200?text=Pon+Tu+Imagen+Aqui) | ![IA](https://via.placeholder.com/400x200?text=Pon+Tu+Imagen+Aqui) |
+| ![QR] | ![IA] |
 
 ---
 
