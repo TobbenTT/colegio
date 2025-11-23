@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 22-11-2025 a las 00:58:02
+-- Tiempo de generación: 23-11-2025 a las 03:01:44
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -115,8 +115,7 @@ CREATE TABLE `asignaturas` (
 INSERT INTO `asignaturas` (`id`, `nombre`) VALUES
 (1, 'Matemáticas'),
 (2, 'Lenguaje'),
-(3, 'Historia'),
-(4, 'PEPE');
+(3, 'Historia');
 
 -- --------------------------------------------------------
 
@@ -189,6 +188,30 @@ INSERT INTO `entregas` (`id`, `actividad_id`, `alumno_id`, `archivo_entrega`, `c
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `eventos`
+--
+
+CREATE TABLE `eventos` (
+  `id` int(11) NOT NULL,
+  `titulo` varchar(255) NOT NULL,
+  `fecha_inicio` datetime NOT NULL,
+  `fecha_fin` datetime NOT NULL,
+  `color` varchar(20) DEFAULT '#3788d8',
+  `descripcion` text DEFAULT NULL,
+  `creado_por` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `eventos`
+--
+
+INSERT INTO `eventos` (`id`, `titulo`, `fecha_inicio`, `fecha_fin`, `color`, `descripcion`, `creado_por`, `created_at`) VALUES
+(1, 'AdoLuche', '2025-11-22 08:00:00', '2025-11-22 13:00:00', '#27ae60', '', 1, '2025-11-22 02:29:24');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `familia`
 --
 
@@ -203,7 +226,8 @@ CREATE TABLE `familia` (
 --
 
 INSERT INTO `familia` (`id`, `apoderado_id`, `alumno_id`) VALUES
-(1, 6, 4);
+(1, 6, 4),
+(2, 7, 4);
 
 -- --------------------------------------------------------
 
@@ -228,8 +252,8 @@ CREATE TABLE `horarios` (
 INSERT INTO `horarios` (`id`, `programacion_id`, `dia`, `hora_inicio`, `hora_fin`, `aula`, `estado`) VALUES
 (1, 1, 'Lunes', '08:00:00', '09:30:00', 'Sala Base', 'activo'),
 (2, 1, 'Miércoles', '10:00:00', '11:30:00', 'Sala Base', 'activo'),
-(3, 2, 'Martes', '08:00:00', '09:30:00', 'Sala Base', 'activo'),
-(4, 2, 'Jueves', '12:00:00', '13:30:00', 'Sala Base', 'activo'),
+(3, 2, 'Martes', '08:00:00', '09:30:00', 'Sala Base', 'suspendido'),
+(4, 2, 'Jueves', '12:00:00', '13:30:00', 'Sala Base', 'suspendido'),
 (5, 2, 'Miércoles', '15:46:00', '02:40:00', '104', 'activo'),
 (6, 1, 'Martes', '15:40:00', '15:41:00', '', 'activo'),
 (7, 2, 'Viernes', '08:48:00', '01:48:00', '104', 'activo');
@@ -253,7 +277,7 @@ CREATE TABLE `matriculas` (
 
 INSERT INTO `matriculas` (`id`, `alumno_id`, `curso_id`, `anio`) VALUES
 (1, 4, 1, '2025'),
-(2, 8, 1, '2025');
+(2, 8, 1, '2026');
 
 -- --------------------------------------------------------
 
@@ -278,7 +302,8 @@ CREATE TABLE `mensajes` (
 INSERT INTO `mensajes` (`id`, `remitente_id`, `destinatario_id`, `asunto`, `mensaje`, `leido`, `fecha`) VALUES
 (1, 3, 4, 'Puto', 'Puto', 0, '2025-11-20 22:08:47'),
 (2, 3, 4, 'Puto', 'Puto', 0, '2025-11-20 22:12:14'),
-(3, 3, 4, 'Puto', 'Puto', 0, '2025-11-20 22:13:42');
+(3, 3, 4, 'Puto', 'Puto', 0, '2025-11-20 22:13:42'),
+(4, 4, 3, 'Consulta de clase: Lenguaje', 'hola\r\n', 0, '2025-11-22 02:00:57');
 
 -- --------------------------------------------------------
 
@@ -308,7 +333,8 @@ INSERT INTO `notificaciones` (`id`, `usuario_id`, `mensaje`, `enlace`, `leido`, 
 (6, 8, 'Tienes una nueva Observación en tu Hoja de Vida.', 'mis_anotaciones.php', 1, '2025-11-21 03:04:59'),
 (7, 8, 'Tienes una nueva Observación en tu Hoja de Vida.', 'mis_anotaciones.php', 1, '2025-11-21 03:05:07'),
 (8, 8, 'Tienes una nueva Observación en tu Hoja de Vida.', 'mis_anotaciones.php', 1, '2025-11-21 03:05:19'),
-(9, 8, 'Tienes una nueva Observación en tu Hoja de Vida.', 'mis_anotaciones.php', 1, '2025-11-21 03:05:34');
+(9, 8, 'Tienes una nueva Observación en tu Hoja de Vida.', 'mis_anotaciones.php', 1, '2025-11-21 03:05:34'),
+(10, 3, 'Consulta de Pepito Alumno en Lenguaje', 'mensajes.php', 1, '2025-11-22 02:00:57');
 
 -- --------------------------------------------------------
 
@@ -330,7 +356,6 @@ CREATE TABLE `programacion_academica` (
 INSERT INTO `programacion_academica` (`id`, `curso_id`, `asignatura_id`, `profesor_id`) VALUES
 (1, 1, 1, 2),
 (2, 1, 2, 3),
-(3, 3, 4, 6),
 (4, 2, 2, 3),
 (5, 2, 1, 2);
 
@@ -418,6 +443,13 @@ ALTER TABLE `entregas`
   ADD PRIMARY KEY (`id`),
   ADD KEY `actividad_id` (`actividad_id`),
   ADD KEY `alumno_id` (`alumno_id`);
+
+--
+-- Indices de la tabla `eventos`
+--
+ALTER TABLE `eventos`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `creado_por` (`creado_por`);
 
 --
 -- Indices de la tabla `familia`
@@ -520,10 +552,16 @@ ALTER TABLE `entregas`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT de la tabla `eventos`
+--
+ALTER TABLE `eventos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT de la tabla `familia`
 --
 ALTER TABLE `familia`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `horarios`
@@ -541,13 +579,13 @@ ALTER TABLE `matriculas`
 -- AUTO_INCREMENT de la tabla `mensajes`
 --
 ALTER TABLE `mensajes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `programacion_academica`
@@ -598,6 +636,12 @@ ALTER TABLE `asistencia`
 ALTER TABLE `entregas`
   ADD CONSTRAINT `entregas_ibfk_1` FOREIGN KEY (`actividad_id`) REFERENCES `actividades` (`id`),
   ADD CONSTRAINT `entregas_ibfk_2` FOREIGN KEY (`alumno_id`) REFERENCES `usuarios` (`id`);
+
+--
+-- Filtros para la tabla `eventos`
+--
+ALTER TABLE `eventos`
+  ADD CONSTRAINT `eventos_ibfk_1` FOREIGN KEY (`creado_por`) REFERENCES `usuarios` (`id`);
 
 --
 -- Filtros para la tabla `familia`
